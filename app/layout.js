@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Net Market",
-  description: "Net Market",
+  title: "Vintage Life Pvt.Ltd",
+  description: "Vintage Life Pvt.Ltd",
 };
 
 export default function RootLayout({ children }) {
