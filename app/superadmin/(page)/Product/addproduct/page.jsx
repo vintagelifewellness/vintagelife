@@ -133,7 +133,7 @@ export default function AddProductPage() {
                             <input type="number" name="mrp" placeholder="0.00" value={formData.mrp} onChange={handleChange} className="form-input" required />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">(SP)</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">(Rp)</label>
                             <input type="number" name="sp" placeholder="0.00" value={formData.sp} onChange={handleChange} className="form-input" required />
                         </div>
                         <div>

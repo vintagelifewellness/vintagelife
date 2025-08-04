@@ -112,6 +112,7 @@ export default function Page() {
                                     {/* <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">Group</th> */}
                                     <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">Discount Price</th>
                                     <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">Market Price</th>
+                                    <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">RP</th>
                                     <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">HSN Code</th>
                                     <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">CGST</th>
                                     <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">SGST</th>
@@ -148,9 +149,14 @@ export default function Page() {
                                                     <div className="font-extrabold textn">₹{product.dp}</div>
                                                 </div>
                                             </td>
-                                              <td className="px-6 py-4">
+                                            <td className="px-6 py-4">
                                                 <div className="flex items-baseline space-x-2">
                                                     <div className="text-sm text-gray-400 line-through">₹{product.mrp}</div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-baseline space-x-2">
+                                                    <div className="text-sm textn">{product.sp}</div>
                                                 </div>
                                             </td>
                                              <td className="px-6 py-4">
@@ -158,12 +164,12 @@ export default function Page() {
                                                     <div className="text-sm textn">{product.hsn}</div>
                                                 </div>
                                             </td>
-                                              <td className="px-6 py-4">
+                                            <td className="px-6 py-4">
                                                 <div className="flex items-baseline space-x-2">
                                                     <div className="text-sm textn">{product.cgst}</div>
                                                 </div>
                                             </td>
-                                              <td className="px-6 py-4">
+                                            <td className="px-6 py-4">
                                                 <div className="flex items-baseline space-x-2">
                                                     <div className="text-sm textn">{product.sgst}</div>
                                                 </div>

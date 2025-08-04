@@ -173,7 +173,7 @@ export default function AddOrUpdateProductPage() {
                 </div>
 
                 <div>
-                    <label className="block mb-1 font-medium">Selling Price</label>
+                    <label className="block mb-1 font-medium">RP</label>
                     <input type="number" name="sp" placeholder="Selling Price" value={formData.sp} onChange={handleChange} className="w-full p-2 border rounded" required />
                 </div>
 
