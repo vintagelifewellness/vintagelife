@@ -21,7 +21,7 @@ export default function page() {
         <div className="relative z-10 text-center px-6">
           {/* Animated Heading */}
           <h1 className="text-3xl md:text-5xl lg:text-7xl font-extrabold tracking-wide uppercase transform transition-all duration-500 hover:scale-105">
-            Who We Are 
+            Who We Are...
           </h1>
 
           {/* Highlighted Tagline */}
