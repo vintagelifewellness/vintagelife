@@ -359,7 +359,7 @@ export default function Signup() {
                                 </label>
                                 <label className="flex items-start space-x-2">
                                     <input type="checkbox" checked={checkboxes[3]} onChange={() => handleCheckboxChange(3)} />
-                                    <span>I have been made aware of the Mahaguru Business Plan and the rules of conduct and Code of ethics.</span>
+                                    <span>I have been made aware of the Vintage Life Business Plan and the rules of conduct and Code of ethics.</span>
                                 </label>
                                 <label className="flex items-start space-x-2">
                                     <input type="checkbox" checked={checkboxes[4]} onChange={() => handleCheckboxChange(4)} />

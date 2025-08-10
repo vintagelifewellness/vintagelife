@@ -175,12 +175,12 @@ const AppHeader = () => {
                     {mobile}
                   </div>
                   <p
-                    className={`text-xs font-semibold mt-1 px-2 py-1 rounded-full inline-block ${usertype === 0
+                    className={`text-xs capitalize font-semibold mt-1 px-2 py-1 rounded-full inline-block ${usertype === "0"
                         ? "bg-red-100 text-red-600"
                         : "bg-green-100 text-green-600"
                       }`}
                   >
-                    {usertype === 0 ? "Inactive" : "Active"}
+                    {usertype === "0" ? "In active" : "Active"}
                   </p>
                 </div>
 
