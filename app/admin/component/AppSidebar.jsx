@@ -38,6 +38,7 @@ const navItems = [
             { name: "Sales Groth Income", path: "/admin/Account/salesgrowth", pro: false },
             // { name: "Monthly Sale Income", path: "/admin/Account/mysales", pro: false },
             { name: "Sales Performance Income", path: "/admin/Account/salesperformance", pro: false },
+            { name: "Travelfund Income", path: "/admin/Account/travelfund", pro: false },
             { name: "Tds Deduction Report", path: "/admin/Account/tdsdeduction", pro: false },
             // { name: "My Repurchase Payments", path: "/admin/Account/repurchasepayments", pro: false },
             { name: "Step Pendency", path: "/admin/Account/stepending", pro: false },
