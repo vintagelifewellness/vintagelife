@@ -209,6 +209,8 @@ const UserTable = React.memo(({ users }) => (
             <tr>
                 <th scope="col" className="px-6 py-4">User</th>
                 <th scope="col" className="px-6 py-4">Ds Code</th>
+                <th scope="col" className="px-6 py-4">SAO RP</th>
+                <th scope="col" className="px-6 py-4">SGO RP</th>
                 <th scope="col" className="px-6 py-4 hidden sm:table-cell">Group</th>
                 <th scope="col" className="px-6 py-4 hidden md:table-cell">Level</th>
                 <th scope="col" className="px-6 py-4 hidden lg:table-cell">Active Sp</th>
@@ -233,6 +235,8 @@ const UserTable = React.memo(({ users }) => (
                         </div>
                     </td>
                     <td className="px-6 py-4">{user.dscode}</td>
+                    <td className="px-6 py-4">{user.saosp}</td>
+                    <td className="px-6 py-4">{user.sgosp}</td>
                     <td className="px-6 py-4 hidden sm:table-cell">{user.group}</td>
                     <td className="px-6 py-4 hidden md:table-cell">{user.level || 'N/A'}</td>
                     <td className="px-6 py-4 hidden lg:table-cell">{user.activesp}</td>
@@ -251,9 +255,9 @@ const UserTable = React.memo(({ users }) => (
                                 : user.defaultdata}
                         </span>
                     </td>
-  
-                   <td className="px-6 py-4 text-right">
-                        <Link  href={`/superadmin/Report/allreport/${user.usertype === "1" ? "" : "deactiveuser/"}${user.dscode}?email=${encodeURIComponent(user.email)}`} className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+
+                    <td className="px-6 py-4 text-right">
+                        <Link href={`/superadmin/Report/allreport/${user.usertype === "1" ? "" : "deactiveuser/"}${user.dscode}?email=${encodeURIComponent(user.email)}`} className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
                             <Eye size={14} />
                             <span>View</span>
                         </Link>

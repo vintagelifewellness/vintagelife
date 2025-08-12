@@ -11,9 +11,9 @@ export async function POST(req) {
             {}, // No filter — applies to all users
             {
                 $set: {
-                    usertype: "0",
-                    saosp: "0",
-                    sgosp: "0"
+                    // usertype: "0",
+                   LevelDetails: [],
+                    level: ""
                 }
             }
         );
