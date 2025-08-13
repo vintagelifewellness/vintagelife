@@ -130,13 +130,13 @@ export default function Dashboard() {
         Icon: UserCheck,
       },
       {
-        title: "This Week SAO SP",
+        title: "This Week SAO RP",
         count: panelData.currentWeekSaoSP || 0,
         color: "#ffb347",
         Icon: Calendar,
       },
       {
-        title: "This Week SGO SP",
+        title: "This Week SGO RP",
         count: panelData.currentWeekSgoSP || 0,
         color: "#7f55a3",
         Icon: Calendar,
@@ -161,18 +161,7 @@ export default function Dashboard() {
         Icon: UserPlus,
       },
 
-      {
-        title: "Current Weak Sao Rp",
-        count: panelData.currentWeekSaoSP || 0,
-        color: "#8b5cf6",
-        Icon: Target,
-      },
-      {
-        title: "Current Weak Sgo Rp",
-        count: panelData.currentWeekSgoSP || 0,
-        color: "#8b5cf6",
-        Icon: Target,
-      },
+    
       {
         title: "Pair Matching Income",
         count:

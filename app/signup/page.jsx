@@ -562,13 +562,14 @@ export default function Signup() {
                                 <select name="nomineeRelation" value={formData.nomineeRelation} onChange={handleChange} className="block w-full px-4 py-3 text-gray-500 bg-white border border-gray-200 rounded-md appearance-none placeholder:text-gray-400 focus:border-[#161950] focus:outline-none focus:ring-[#161950] sm:text-sm">
                                     <option value="" disabled>Select</option>
                                     <option value="Brother">Brother</option>
-                                    <option value="Father">Father</option>
-                                    <option value="Friend">Friend</option>
-                                    <option value="Mother">Mother</option>
-                                    <option value="Wife">Wife</option>
                                     <option value="Sister">Sister</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Husband">Husband</option>
+                                    <option value="Wife">Wife</option>
                                     <option value="Son">Son</option>
                                     <option value="Daughter">Daughter</option>
+                                    <option value="Friend">Friend</option>
                                 </select>
                                 {errors.nomineeRelation && <p className="text-red-500 text-xs">{errors.nomineeRelation}</p>}
                             </div>
