@@ -10,7 +10,7 @@ export async function POST(req) {
     const potentialUsers = await UserModel.find({});
     const filteredUsers = [];
 
-    // Step 1: Filter users who have at least one SAO and one SGO child
+    // Step 1: Filter users with at least one SAO and one SGO child
     for (const user of potentialUsers) {
       const hasSAO = await UserModel.exists({ pdscode: user.dscode, group: "SAO" });
       const hasSGO = await UserModel.exists({ pdscode: user.dscode, group: "SGO" });
@@ -28,29 +28,43 @@ export async function POST(req) {
       const sgosp = Number(user.sgosp || 0);
       const lastMatchedLevel = user.monthlylastMatched || null;
 
-      // Step 2.1: Find index of last matched level
       let lastIndex = -1;
       if (lastMatchedLevel) {
         lastIndex = steppending.findIndex((step) => step.level === lastMatchedLevel);
       }
 
-      const nextIndex = lastIndex + 1;
-      const nextLevel = steppending[nextIndex];
-      if (!nextLevel) continue;
+      let nextIndex = lastIndex + 1;
+      let latestLevel = lastMatchedLevel;
 
-      // Step 2.2: Calculate cumulative SAO/SGO required up to next level
-      const requiredSAO = steppending
-        .slice(0, nextIndex + 1)
-        .reduce((sum, level) => sum + level.sao, 0);
-      const requiredSGO = steppending
-        .slice(0, nextIndex + 1)
-        .reduce((sum, level) => sum + level.sgo, 0);
+      // Total amounts for single closing entry
+      let totalBonus = 0;
 
-      // Step 2.3: Check if user qualifies for next level cumulatively
-      if (saosp >= requiredSAO && sgosp >= requiredSGO) {
-        const bonusAmount = parseInt(nextLevel.bonus.replace(/[₹,]/g, ""), 10);
-        const charges = bonusAmount * 0.05;
-        const payamount = bonusAmount - charges;
+      // Step 3: Loop through all next eligible levels
+      while (nextIndex < steppending.length) {
+        const nextLevel = steppending[nextIndex];
+
+        // Calculate cumulative SAO/SGO required up to this level
+        const requiredSAO = steppending
+          .slice(0, nextIndex + 1)
+          .reduce((sum, level) => sum + level.sao, 0);
+        const requiredSGO = steppending
+          .slice(0, nextIndex + 1)
+          .reduce((sum, level) => sum + level.sgo, 0);
+
+        if (saosp >= requiredSAO && sgosp >= requiredSGO) {
+          const bonusAmount = parseInt(nextLevel.bonus.replace(/[₹,]/g, ""), 10);
+          totalBonus += bonusAmount;
+          latestLevel = nextLevel.level;
+          nextIndex++;
+        } else {
+          break; // stop if next level not eligible
+        }
+      }
+
+      // Step 4: Create a single closing entry if any bonus earned
+      if (totalBonus > 0) {
+        const charges = totalBonus * 0.05;
+        const payamount = totalBonus - charges;
 
         const closingEntry = new MonthlyClosingHistoryModel({
           dsid: user.dscode,
@@ -58,19 +72,19 @@ export async function POST(req) {
           acnumber: user.acnumber || "N/A",
           ifscCode: user.ifscCode || "N/A",
           bankName: user.bankName || "N/A",
-          amount: bonusAmount,
+          amount: totalBonus,
           charges: charges.toFixed(2),
           payamount: payamount.toFixed(2),
           date: new Date().toISOString().split("T")[0],
-          level: nextLevel.level,
+          level: latestLevel, // latest achieved level
         });
 
         await closingEntry.save();
 
-        // Step 2.4: Update last matched level
+        // Update last matched level
         await UserModel.updateOne(
           { _id: user._id },
-          { $set: { monthlylastMatched: nextLevel.level } }
+          { $set: { monthlylastMatched: latestLevel } }
         );
 
         successfulPayouts++;
