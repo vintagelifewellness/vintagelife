@@ -19,7 +19,9 @@ export async function POST(req) {
                     saosp:"0",
                     sgosp:"0",
                     wallet:"0",
-                    earnsp:"0"
+                    earnsp:"0",
+                    travellastMatchedsao:"2000",
+                    travellastMatchedsgo:"1000"
                 }
             }
         );

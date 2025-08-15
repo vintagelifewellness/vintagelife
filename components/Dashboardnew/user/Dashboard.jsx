@@ -102,7 +102,7 @@ export default function Dashboard() {
     ? [
       {
         title: "RP",
-        count: panelData.mainUser?.saosp || 0,
+        count: 0,
         color: "#3293ba",
         Icon: Target,
       },
@@ -114,25 +114,25 @@ export default function Dashboard() {
       // },
       {
         title: "Total SAO",
-        count: panelData.totalSAO || 0,
+        count: 0,
         color: "#5cba47",
         Icon: Users,
       },
       {
         title: "Total SGO",
-        count: panelData.totalSGO || 0,
+        count: 0,
         color: "#a94dd6",
         Icon: Users,
       },
       {
         title: "Active SAO",
-        count: panelData.totalActiveSAO || 0,
+        count: 0,
         color: "#ff7b7b",
         Icon: UserCheck,
       },
       {
         title: "Active SGO",
-        count: panelData.totalActiveSGO || 0,
+        count:  0,
         color: "#2eb872",
         Icon: UserCheck,
       },
@@ -156,19 +156,19 @@ export default function Dashboard() {
       // },
       {
         title: "Direct SAO",
-        count: panelData.directSao || 0,
+        count:  0,
         color: "#3b82f6",
         Icon: UserPlus,
       },
       {
         title: "Direct SGO",
-        count: panelData.directSgo || 0,
+        count: 0,
         color: "#8b5cf6",
         Icon: UserPlus,
       },
       {
         title: "Current Weak Rp",
-        count: panelData.currentWeekSaoSP || 0,
+        count: 0,
         color: "#8b5cf6",
         Icon: Target,
       },

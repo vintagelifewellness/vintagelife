@@ -40,7 +40,7 @@ export default function Page() {
 
 
 
-    const issueDate = new Date().toLocaleDateString("en-GB");
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -117,9 +117,9 @@ export default function Page() {
                                 </div>
 
                                 <div className="col-span-2">
-                                    <InfoRow label="Registered Office" value="F-1, A-13, Kanchan Deep, Panchwati Circle, Jaipur, Rajasthan, 302021" />
+                                    <InfoRow label="Registered Office" value="2K2 Keshaopura Kamla Neharu nagar, Jaipur 302006 ( Raj. )" />
                                 </div>
-                                <InfoRow label="Date of Issue" value={issueDate} />
+                                <InfoRow label="Date of Issue" value={data.activedate ? new Date(data.activedate).toLocaleDateString("en-GB") : " - / - / - "} />
                                 <InfoRow label="Date of Joining" value={data.createdAt ? new Date(data.createdAt).toLocaleDateString("en-GB") : "N/A"} />
                             </div>
                         </div>
@@ -135,7 +135,7 @@ export default function Page() {
                             </div>
 
                         </div>
-                        <div className=" text-xs text-center bg-white border-t">Email : vintage@gmail.com</div>
+                        <div className=" text-xs text-center bg-white border-t">Email : vintagelifewellness2025@gmail.com</div>
 
                         {/* 4. The Profile Image */}
                         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-full px-5">
