@@ -37,6 +37,7 @@ const UserSchema = new Schema(
     panimage: { type: String },
     aadharno: { type: String },
     aadharimage: { type: String },
+    aadharimageback: { type: String },
     aadharfullname: { type: String },
     addressproof: { type: String },
     addressproofno: { type: String },
@@ -137,6 +138,6 @@ UserSchema.pre("save", async function (next) {
 
 
 
-const UserModel = mongoose.models.user7 || mongoose.model("user7", UserSchema);
+const UserModel = mongoose.models.user8 || mongoose.model("user8", UserSchema);
 
 export default UserModel;

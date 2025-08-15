@@ -150,8 +150,8 @@ export default function Signup() {
             if (!formData.address?.state) newErrors.state = "Please select State";
 
             if (!formData.aadharno) newErrors.aadharno = "Please Enter Aadhar Number";
-            if (!formData.aadharimage) newErrors.aadharimage = "Please select Aadhar Card Image";
-            if (!formData.aadharfullname) newErrors.aadharfullname = "Please Enter Name As per Aadhar";
+            // if (!formData.aadharimage) newErrors.aadharimage = "Please select Aadhar Card Image";
+            // if (!formData.aadharfullname) newErrors.aadharfullname = "Please Enter Name As per Aadhar";
 
 
 
@@ -194,21 +194,21 @@ export default function Signup() {
     };
 
 
-    const handleImageUpload = async (file) => {
-        const formData = new FormData();
-        formData.append("file", file);
-        setIsSubmitting(true);
+    // const handleImageUpload = async (file) => {
+    //     const formData = new FormData();
+    //     formData.append("file", file);
+    //     setIsSubmitting(true);
 
-        try {
-            const response = await axios.post("/api/upload", formData);
-            setIsSubmitting(false); // ✅ move before return
-            return response.data.file.secure_url;
-        } catch (error) {
-            console.error("Image upload failed:", error);
-            setIsSubmitting(false); // ✅ move before return
-            return null;
-        }
-    };
+    //     try {
+    //         const response = await axios.post("/api/upload", formData);
+    //         setIsSubmitting(false); // ✅ move before return
+    //         return response.data.file.secure_url;
+    //     } catch (error) {
+    //         console.error("Image upload failed:", error);
+    //         setIsSubmitting(false); // ✅ move before return
+    //         return null;
+    //     }
+    // };
 
 
 
@@ -651,7 +651,7 @@ export default function Signup() {
                             </div>
 
 
-                            <div className="lg:col-span-1">
+                            {/* <div className="lg:col-span-1">
                                 <label className="text-gray-700 text-sm font-semibold">Aadhar Full Name</label>
                                 <input type="text" name="aadharfullname" value={formData.aadharfullname} onChange={handleChange} placeholder="Aadhar Full Name" className="block w-full px-4 py-3 text-gray-500 bg-white border border-gray-200 rounded-md appearance-none placeholder:text-gray-400 focus:border-[#161950] focus:outline-none focus:ring-[#161950] sm:text-sm" required />
                                 {errors.aadharfullname && <p className="text-red-500 text-xs">{errors.aadharfullname}</p>}
@@ -680,7 +680,7 @@ export default function Signup() {
                                     }}
                                 />
                                 {errors.aadharimage && <p className="text-red-500 text-xs">{errors.aadharimage}</p>}
-                            </div>
+                            </div> */}
 
 
 
