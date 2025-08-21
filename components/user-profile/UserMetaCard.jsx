@@ -169,9 +169,13 @@ export default function UserMetaCard() {
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                         <InfoPill label="DSID" value={userData?.dscode} />
                         <InfoPill label="Sponsor ID" value={userData?.pdscode} />
+                        {userData?.usertype !== "0" && (
+                            <>
+                                <InfoPill label="SAO RP" value={userData?.saosp} />
+                                <InfoPill label="SGO RP" value={userData?.sgosp} />
+                            </>
+                        )}
 
-                        <InfoPill label="SAO RP" value={userData?.saosp} />
-                        <InfoPill label="SGO RP" value={userData?.sgosp} />
                         {/* Themed KYC Badge container */}
                         <div className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium px-3 py-1.5 rounded-full text-sm shadow-sm">
                             <span className="font-semibold">KYC:</span> <KycBadge kyc={kycData} />
@@ -181,7 +185,7 @@ export default function UserMetaCard() {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0 self-stretch sm:self-center">
-                   
+
                     <button
                         onClick={() => {
                             setNameInput(userData?.name); // Reset form state on open
@@ -229,7 +233,7 @@ export default function UserMetaCard() {
                 </div>
             )}
 
-           
+
         </div>
     );
 }

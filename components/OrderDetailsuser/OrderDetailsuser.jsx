@@ -120,7 +120,7 @@ export default function OrderDetailsuser({ data }) {
                             <p className="text-sm text-gray-600 dark:text-gray-400"><strong>CF Type:</strong> {data.cftype}</p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-sm text-gray-600 dark:text-gray-400"><strong>Total SP:</strong> ₹{data.totalsp}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400"><strong>Total RP:</strong> ₹{data.totalsp}</p>
                             <p className="text-lg font-bold text-blue-600 dark:text-blue-400"><strong>Net Amount:</strong> ₹{data.netamount}</p>
                         </div>
                     </div>

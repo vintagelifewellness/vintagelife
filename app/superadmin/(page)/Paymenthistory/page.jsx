@@ -40,8 +40,8 @@ export default function PaymentHistoryPage() {
     'order',
     'user active',
     'level update',
-    'superadmin gift sp',
-    'superadmin remove sp',
+    'superadmin gift rp',
+    'superadmin remove rp',
   ]
 
   return (
@@ -92,7 +92,7 @@ export default function PaymentHistoryPage() {
               <th className="p-2 border">Amount</th>
               <th className="p-2 border">Bonus Income</th>
               <th className="p-2 border">Performance Income</th>
-              <th className="p-2 border">SP</th>
+              <th className="p-2 border">RP</th>
               <th className="p-2 border">Group</th>
               <th className="p-2 border">Type</th>
               <th className="p-2 border">Reference</th>

@@ -16,7 +16,7 @@ export default function MiniWeeklyCountdownTimer() {
 
     function getTimeLeftToNextThursday5PM() {
         const now = moment();
-        let target = moment().isoWeekday(4).hour(17).minute(0).second(0).millisecond(0); // Thursday 5:00 PM
+        let target = moment().isoWeekday(3).hour(17).minute(0).second(0).millisecond(0); // Thursday 5:00 PM
 
         // If it's already past Thursday 5:00 PM this week, move to next week's Thursday
         if (now.isAfter(target)) {

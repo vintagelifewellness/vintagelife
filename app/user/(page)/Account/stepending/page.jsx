@@ -28,8 +28,11 @@ export default function Page() {
 
 
   const tableRows = useMemo(() => {
-    let saoLeft = parseFloat(dsid.saosp || "0");
-    let sgoLeft = parseFloat(dsid.sgosp || "0");
+    // let saoLeft = parseFloat(dsid.saosp || "0");
+    // let sgoLeft = parseFloat(dsid.s
+    let saoLeft = parseFloat("0");
+    let sgoLeft = parseFloat("0");
+
 
     return steppending.map((data, index) => {
       const totalSAO = parseFloat(data.sao);
@@ -78,12 +81,12 @@ export default function Page() {
           <thead className="bg-gray-100">
             <tr>
               <th className="border px-3 py-2 text-center">Step</th>
-              <th className="border px-3 py-2 text-center">TotalSAOSP</th>
-              <th className="border px-3 py-2 text-center">TotalSGOSP</th>
-              <th className="border px-3 py-2 text-center">SAOSP</th>
-              <th className="border px-3 py-2 text-center">SGOSP</th>
-              <th className="border px-3 py-2 text-center">RemainSAOSP</th>
-              <th className="border px-3 py-2 text-center">RemainSGOSP</th>
+              <th className="border px-3 py-2 text-center">TotalSAORP</th>
+              <th className="border px-3 py-2 text-center">TotalSGORP</th>
+              <th className="border px-3 py-2 text-center">SAORP</th>
+              <th className="border px-3 py-2 text-center">SGORP</th>
+              <th className="border px-3 py-2 text-center">RemainSAORP</th>
+              <th className="border px-3 py-2 text-center">RemainSGORP</th>
               <th className="border px-3 py-2 text-center">Status</th>
             </tr>
           </thead>

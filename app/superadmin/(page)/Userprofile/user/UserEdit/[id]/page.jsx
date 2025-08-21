@@ -196,7 +196,7 @@ export default function Page() {
             amount: "0",
             sp: addAmount.toString(),
             group: formData.spAddType || "",
-            type: "superadmin gift sp",
+            type: "superadmin gift rp",
             orderno: "",
             levelname: "",
             referencename: ""
@@ -228,7 +228,7 @@ export default function Page() {
             amount: "0",
             sp: `-${removeAmount.toString()}`,
             group: userData.group || "",
-            type: "superadmin remove sp",
+            type: "superadmin remove rp",
             orderno: "",
             levelname: "",
             referencename: ""
