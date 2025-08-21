@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "./Providers";
 import { SidebarProvider } from "./context/SidebarContext";
 import { ThemeProvider } from "@/app/context/ThemeContext"
+import { Analytics } from "@vercel/analytics/next"
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
             </SidebarProvider>
           </ThemeProvider>
         </AuthProvider>
+        <Analytics/>
       </body>
     </html>
   );

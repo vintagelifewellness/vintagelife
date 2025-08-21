@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.5.0",
     "axios": "^1.8.1",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.5.1",
