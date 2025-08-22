@@ -57,12 +57,9 @@ export default function page() {
 
 
       <p className='text-lg mt-2 text-justify'><span className=" font-semibold text-lg">“Direct Selling Entity/Company”</span>
-        Means a Company namely M/s ANAADIPRO
-        WELLNESS PRIVATE LIMITED and running its main business in the name and style of
-        “ANAADIPRO WELLNESS” and for the purpose of thease guidelines direct selling enitity
-        menas the Board of Directors or to secretary or manager or any other person
-        competent/authorized by the company.In respect of the definition of Agreement, we further
-        agreed for the following new definition of Agreement as per follows –</p>
+        Means a company, M/s Vintage Life Wellness Private Limited, carrying on its main business in the name and style of ‘Vintage Life Wellness’. For the purpose of these guidelines, ‘Direct Selling Entity’ means the Board of Directors, the Secretary, the Manager, or any other person duly competent and authorized by the company.
+
+        In respect of the definition of ‘Agreement’, we further agree to adopt the following new definition of ‘Agreement’ as set out below –</p>
 
       <p className='text-lg mt-2 text-justify'><span className=" font-semibold text-lg">Agreement –</span>
         menas agreementas per Indian contract Act, 1872 and the ‘written contract’

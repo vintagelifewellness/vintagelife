@@ -46,18 +46,18 @@ export default function AgreementPage() {
           <span className="underline">{new Date(data?.createdAt).toLocaleDateString('en-GB')}</span> by and between
           <span className="font-semibold">
             {" "}
-            ANAADIPRO WELLNESS PRIVATE
-            LIMITED
+           VINTAGE LIFE WELLNESS PRIVATE LIMITED
           </span>
           , a company registered under the Companies Act 2013 having its
           Registered office at
           <span className="underline">
             {" "}
-            Hore
-            Chandra Nagar. DTR P9 Noel School Gird Gwalior Fort Gwalior, [M.P.] INDIA - 474008
+            K2 Keshaopura Kamla Neharu nagar, Jaipur 302006 ( Raj. )
           </span>{" "}
           acting through its Director
-          <span className="underline"> Director Mr. NARENDRA MEENA</span>{" "}
+          <span className="underline px-2">
+            Director Mr. Dineshji and Director Mr. [SECOND NAME]
+          </span>
           hereinafter called Company (which expression shall, unless repugnant
           to the context, include its successors in business, administrators,
           liquidators and assigns or legal representatives) of the FIRST PARTY
@@ -291,9 +291,8 @@ export default function AgreementPage() {
             <strong>Direct Selling Entity/Company</strong>
             <p className="mt-1">
               Means a company namely{" "}
-              <strong>M/s ANAADIPRO WELLNESS PRIVATE LIMITED </strong>
-              and running its main business in the name and style of ANAADIPRO
-              WELLNESS.
+              <strong>VINTAGE LIFE WELLNESS PRIVATE LIMITED</strong>
+              and running its main business in the name and style of VINTAGE LIFE WELLNESS PRIVATE LIMITED
             </p>
           </li>
 
@@ -331,12 +330,13 @@ export default function AgreementPage() {
           <li className="text-justify">
             <strong>Website</strong>
             <p className="mt-1">
-              Means the official website of the Company ANAADIPRO
+              The official website of the Company VINTAGE LIFE is 
               <a
-                href="http:// www.annadiprowellness.com /"
-                className="text-blue-600 hover:underline"
+                href="https://vintagelifewellness.com/"
+                target="_blank"
+                className="text-blue-600 hover:underline px-2"
               >
-                http:// www.annadiprowellness.com /
+                https://vintagelifewellness.com/
               </a>
             </p>
           </li>
@@ -344,15 +344,14 @@ export default function AgreementPage() {
       </div>
       <div>
         <p className="mt-6 text-justify">
-          WHEREAS <strong>M/s ANAADIPRO WELLNESS PRIVATE LIMITED</strong>, a
+          WHEREAS <strong>VINTAGE LIFE WELLNESS PRIVATE LIMITED</strong>, a
           Company incorporated under the Companies Act, 2013, having its
-          Registration No. <strong>CIN-U47890MP2025PTC074912</strong>
+          Registration No. <strong>CIN-U85100RJ2021PTC073007</strong>
           and Registered Office at{" "}
           <strong>
-            Hore Chandra
-            Nagar.DTR P9 Noel School,Gird Gwalior Fort Gwalior [M.P.] INDIA - 474008
+            K2 Keshaopura Kamla Neharu nagar, Jaipur 302006 ( Raj. )
           </strong>{" "}
-          hereinafter referred to as the Company. "ANAADIPRO WELLNESS".
+          hereinafter referred to as the Company. "VINTAGE LIFE WELLNESS PRIVATE LIMITED WELLNESS".
         </p>
         <p className="text-justify mb-4">
           <strong>PRIVATE LIMITED</strong> takes immense pleasure in introducing
@@ -794,14 +793,13 @@ export default function AgreementPage() {
           <li>
             That the Direct Seller shall comply with all state and central
             government and local governing body laws, regulations and codes that
-            apply to the operation of their ANAADIPRO WELLNESS PRIVATE LIMITED
+            apply to the operation of their VINTAGE LIFE WELLNESS PRIVATE LIMITED
             business. Direct Seller must not engage in any deceptive of unlawful
             trade practice as defined by any central, state or local law or
             regulation.
           </li>
           <li>
-            That the Direct Seller shall not manipulate the ANAADIPRO WELLNESS
-            PRIVATE LIMITED marketing plan or product's rate, Point volume/
+            That the Direct Seller shall not manipulate the AVINTAGE LIFE WELLNESS PRIVATE LIMITED marketing plan or product's rate, Point volume/
             Sales Point/ Business volume etc., in any way and Direct Seller
             shall not send, transmit or otherwise communicate any messages to
             anybody on behalf of the Company otherwise than for authorization
@@ -819,8 +817,7 @@ export default function AgreementPage() {
             Company.
           </li>
           <li>
-            That the Direct Seller shall not use the ANAADIPRO WELLNESS PRIVATE
-            LIMITED trademark, logotype and design anywhere without written
+            That the Direct Seller shall not use theVINTAGE LIFE WELLNESS PRIVATE LIMITED trademark, logotype and design anywhere without written
             permission from the Company. This permission can be withdrawn at any
             time by the Company.
           </li>
@@ -1501,11 +1498,11 @@ export default function AgreementPage() {
         </ul>
       </div>
       <div className="mt-8 text-sm">
-        <p className="text-center font-semibold mb-6">
+        {/* <p className="text-center font-semibold mb-6">
           IN WITNESS WHEREOF the parties hereto have caused this Agreement to be
           executed through their respective authorized representatives on the
           19/02/2025
-        </p>
+        </p> */}
 
         <p className="mb-6">
           Read over by me/ to me and agreed by me on (Date) .{new Date(data?.createdAt).toLocaleDateString('en-GB')}
@@ -1529,12 +1526,7 @@ export default function AgreementPage() {
             <p>Sign and seal of the company...</p>
           </div>
           <div>
-            <Image
-              width={150}
-              height={150}
-              alt=''
-              src="/images/homepage/Screenshot 2025-04-19 151921.png"
-            />
+        
           </div>
         </div>
 
