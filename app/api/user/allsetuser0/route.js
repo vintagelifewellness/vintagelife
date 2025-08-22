@@ -11,17 +11,17 @@ export async function POST(req) {
             {}, // No filter — applies to all users
             {
                 $set: {
-                    LevelDetails: [],
-                    WalletDetails: [],
-                    lastMatchedSP: "0",
-                    monthlylastMatched:"0",
-                    level: "",
-                    saosp:"0",
-                    sgosp:"0",
-                    wallet:"0",
-                    earnsp:"0",
-                    travellastMatchedsao:"2000",
-                    travellastMatchedsgo:"1000"
+                    // LevelDetails: [],
+                    // WalletDetails: [],
+                    // lastMatchedSP: "0",
+                    // monthlylastMatched:"0",
+                    // level: "",
+                    // saosp:"0",
+                    // sgosp:"0",
+                    // wallet:"0",
+                    // earnsp:"0",
+                    // travellastMatchedsao:"2000",
+                    // travellastMatchedsgo:"1000"
                 }
             }
         );

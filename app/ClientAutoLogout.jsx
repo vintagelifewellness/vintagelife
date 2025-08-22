@@ -3,38 +3,31 @@
 import { useEffect, useRef, useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 
-const INACTIVITY_LIMIT = 5 * 60 * 1000; 
-const WARNING_TIME = 30 * 1000; 
+const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes
+const WARNING_TIME = 30 * 1000;         // 30 seconds
 
 export default function ClientAutoLogout() {
   const { data: session, status } = useSession();
-  const [showWarning, setShowWarning] = useState(true);
+  const [showWarning, setShowWarning] = useState(false);
   const [countdown, setCountdown] = useState(WARNING_TIME / 1000);
-  const warningTimer = useRef(null);
-  const logoutTimer = useRef(null);
+
+  const lastActivityTime = useRef(Date.now());
+  const checkInterval = useRef(null);
   const countdownInterval = useRef(null);
 
-  const resetTimers = () => {
-    clearTimeout(warningTimer.current);
-    clearTimeout(logoutTimer.current);
-    clearInterval(countdownInterval.current);
+  // Track user activity
+  const updateActivity = () => {
+    lastActivityTime.current = Date.now();
     setShowWarning(false);
     setCountdown(WARNING_TIME / 1000);
-
-    // Only start timers if user is authenticated
-    if (status === 'authenticated') {
-      warningTimer.current = setTimeout(() => {
-        setShowWarning(true);
-        startCountdown();
-      }, INACTIVITY_LIMIT - WARNING_TIME);
-
-      logoutTimer.current = setTimeout(() => {
-        signOut();
-      }, INACTIVITY_LIMIT);
-    }
   };
 
+  // Start the countdown timer
   const startCountdown = () => {
+    if (countdownInterval.current) {
+      clearInterval(countdownInterval.current);
+    }
+
     countdownInterval.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -46,22 +39,36 @@ export default function ClientAutoLogout() {
     }, 1000);
   };
 
+  // Setup effect when user is authenticated
   useEffect(() => {
     if (status !== 'authenticated') return;
 
     const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-    const activityHandler = () => resetTimers();
+    events.forEach((event) => window.addEventListener(event, updateActivity));
 
-    events.forEach((event) => window.addEventListener(event, activityHandler));
-    resetTimers(); // Start timers on mount if logged in
+    lastActivityTime.current = Date.now();
+
+    checkInterval.current = setInterval(() => {
+      const now = Date.now();
+      const timeInactive = now - lastActivityTime.current;
+
+      if (timeInactive >= INACTIVITY_LIMIT) {
+        signOut();
+      } else if (
+        timeInactive >= INACTIVITY_LIMIT - WARNING_TIME &&
+        !showWarning
+      ) {
+        setShowWarning(true);
+        startCountdown();
+      }
+    }, 1000);
 
     return () => {
       events.forEach((event) =>
-        window.removeEventListener(event, activityHandler)
+        window.removeEventListener(event, updateActivity)
       );
-      clearTimeout(warningTimer.current);
-      clearTimeout(logoutTimer.current);
-      clearInterval(countdownInterval.current);
+      if (checkInterval.current) clearInterval(checkInterval.current);
+      if (countdownInterval.current) clearInterval(countdownInterval.current);
     };
   }, [status]);
 
@@ -69,18 +76,26 @@ export default function ClientAutoLogout() {
 
   return (
     <>
-    {showWarning && (
-  <div className="fixed inset-0  z-50 flex justify-center items-center">
-    <div className="bg-white border rounded-lg shadow-2xl p-6 max-w-sm w-full text-center animate-fade-in">
-      <h2 className="text-xl font-semibold text-gray-800 mb-2">Session Expiring</h2>
-      <p className="text-gray-600 mb-4">
-        You will be logged out in <span className="font-bold text-red-600">{countdown}</span> seconds due to inactivity.
-      </p>
-     
-    </div>
-  </div>
-)}
+      {showWarning && (
+        <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-40">
+          <div className="bg-white border rounded-lg shadow-2xl p-6 max-w-sm w-full text-center animate-fade-in">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              Session Expiring
+            </h2>
+            <p className="text-gray-600 mb-4">
+              You will be logged out in{' '}
+              <span className="font-bold text-red-600">{countdown}</span>{' '}
+              seconds due to inactivity.
+            </p>
+            <button
+              onClick={updateActivity}
+              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Continue Session
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
-

@@ -48,12 +48,29 @@ export const GET = async (request, { params }) => {
       statusapprovedate: -1,
     });
 
+    // ✅ Calculate totals (convert amount to float before summing)
+    const totalmonthly = monthlyData.reduce(
+      (sum, item) => sum + parseFloat(item.amount || 0),
+      0
+    );
+    const totalclosing = closingData.reduce(
+      (sum, item) => sum + parseFloat(item.amount || 0),
+      0
+    );
+    const totaltravel = travelFundData.reduce(
+      (sum, item) => sum + parseFloat(item.amount || 0),
+      0
+    );
+
     return Response.json({
       message: "Data fetched successfully!",
       success: true,
       monthlyData,
       closingData,
       travelFundData,
+      totalmonthly,
+      totalclosing,
+      totaltravel,
     });
   } catch (error) {
     console.error("Error fetching data:", error);
