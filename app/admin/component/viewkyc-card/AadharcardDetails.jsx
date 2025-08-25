@@ -21,9 +21,40 @@ export default function AadharcardDetails() {
   const [aadharimage, setaadharimage] = useState("");
   const [aadharimageback, setaadharimageback] = useState("");
 
+  const [addressproof, setAddressproof] = useState("");
+  const [addressproofno, setAddressproofno] = useState("");
+  const [addressproofimage, setAddressproofimage] = useState("");
+
   const [uploadingFront, setUploadingFront] = useState(false);
   const [uploadingBack, setUploadingBack] = useState(false);
+  const handleUseAsAddressProof = async () => {
+    if (!aadharno || !aadharimageback) {
+      alert("Please upload Aadhar No and Back Image before using as address proof.");
+      return;
+    }
 
+    setLoading(true);
+    try {
+      // Auto set values
+      setAddressproof("Aadhar Card");
+      setAddressproofno(aadharno);
+      setAddressproofimage(aadharimageback);
+
+      await axios.patch("/api/user/update-user", {
+        id: session?.user?.id,
+        addressproof: "Aadhar Card",
+        addressproofno: aadharno,
+        addressproofimage: aadharimageback,
+      });
+
+      alert("Aadhar card successfully saved as Address Proof!");
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to save address proof:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     const fetchUserData = async () => {
       if (!session?.user?.email) return;
@@ -74,6 +105,10 @@ export default function AadharcardDetails() {
   };
 
   const handleSave = async () => {
+    if (!aadharno || !aadharfullname || !aadharimage || !aadharimageback) {
+      alert("Please fill all fields (No, Image and Name).");
+      return;
+    }
     setLoading(true);
     try {
       await axios.patch("/api/user/update-user", {
@@ -155,9 +190,8 @@ export default function AadharcardDetails() {
 
               {/* Front Side */}
               <div
-                className={`border border-gray-300 dark:border-gray-700 rounded-md p-4 flex items-center justify-center bg-black/10 dark:bg-gray-800 h-40 mt-4 overflow-hidden relative ${
-                  isEditing ? "cursor-pointer" : "cursor-default"
-                }`}
+                className={`border border-gray-300 dark:border-gray-700 rounded-md p-4 flex items-center justify-center bg-black/10 dark:bg-gray-800 h-40 mt-4 overflow-hidden relative ${isEditing ? "cursor-pointer" : "cursor-default"
+                  }`}
                 onClick={() =>
                   isEditing &&
                   document.getElementById("aadhar-front-upload").click()
@@ -184,9 +218,8 @@ export default function AadharcardDetails() {
 
               {/* Back Side */}
               <div
-                className={`border border-gray-300 dark:border-gray-700 rounded-md p-4 flex items-center justify-center bg-black/10 dark:bg-gray-800 h-40 mt-4 overflow-hidden relative ${
-                  isEditing ? "cursor-pointer" : "cursor-default"
-                }`}
+                className={`border border-gray-300 dark:border-gray-700 rounded-md p-4 flex items-center justify-center bg-black/10 dark:bg-gray-800 h-40 mt-4 overflow-hidden relative ${isEditing ? "cursor-pointer" : "cursor-default"
+                  }`}
                 onClick={() =>
                   isEditing &&
                   document.getElementById("aadhar-back-upload").click()
@@ -257,6 +290,17 @@ export default function AadharcardDetails() {
                     Edit
                   </button>
                 )}
+              </div>
+            )}
+            {!kyc?.aadharkkyc && (
+              <div className="mt-4 flex gap-4">
+                <button
+                  className="bg-green-600 text-white p-2 rounded-md disabled:opacity-50"
+                  onClick={handleUseAsAddressProof}
+                  disabled={loading || !aadharno || !aadharimageback}
+                >
+                  {loading ? "Saving..." : "Use as Address Proof"}
+                </button>
               </div>
             )}
           </>

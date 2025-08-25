@@ -68,6 +68,10 @@ export default function BankDetails() {
     };
 
     const handleSave = async () => {
+        if (!bankName || !acnumber || !ifscCode || !bankimage) {
+            alert("Please fill all fields (No, Image and Name).");
+            return;
+        }
         setLoading(true);
         try {
             await axios.patch("/api/user/update-user", {

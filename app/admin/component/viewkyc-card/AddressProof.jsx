@@ -64,6 +64,10 @@ export default function AddressProof() {
     };
 
     const handleSave = async () => {
+         if (!addressproof || !addressproofno || !addressproofimage) {
+      alert("Please fill all fields (No, Image and Name).");
+      return;
+    }
         setLoading(true);
         try {
             await axios.patch("/api/user/update-user", {

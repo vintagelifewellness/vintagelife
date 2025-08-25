@@ -67,6 +67,10 @@ export default function PanCardDetails() {
     };
 
     const handleSave = async () => {
+        if (!panno.trim() || !panimage) {
+            alert("Please fill all fields (PAN No and upload PAN Card image).");
+            return;
+        }
         setLoading(true);
         try {
             await axios.patch("/api/user/update-user", {
