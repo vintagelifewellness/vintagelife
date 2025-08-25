@@ -53,6 +53,7 @@ export default function Page() {
                                     <th className="py-4 px-5 text-left text-sm font-semibold">INCENTIVE</th>
                                     <th className="py-4 px-5 text-left text-sm font-semibold">BONUS</th>
                                     <th className="py-4 px-5 text-left text-sm font-semibold">TOTAL INCOME</th>
+                                    <th className="py-4 px-5 text-left text-sm font-semibold">Tour</th>
                                     {/* <th className="py-4 px-5 text-left text-sm font-semibold">Edit</th> */}
                                 </tr>
                             </thead>
@@ -79,14 +80,15 @@ export default function Page() {
                                                 <td className="py-3 px-5">
                                                     ₹ {(Number(item.performance_income) + Number(item.bonus_income)).toLocaleString("en-IN")}
                                                 </td>
+                                                <td className="py-3 px-5">{item.tour || "N/A"}</td>
 
-                                                 {/* <td className="py-3 px-5">
+                                                {/* <td className="py-3 px-5">
                                                     <Link href={`./update/${item._id}`}>
                                                         <span className="bgw text-xs font-semibold px-3 py-1 rounded-full textn">
                                                             Edit
                                                         </span>
                                                     </Link>
-                                                </td>  */}
+                                                </td> */}
                                             </tr>
                                         ))
                                 ) : (
