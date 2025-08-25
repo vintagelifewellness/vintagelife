@@ -72,10 +72,11 @@ export default function Page() {
                                     <th className="border px-3 py-2 text-left">Name</th>
                                     <th className="border px-3 py-2 text-left">Aadhar Number</th>
                                     <th className="border px-3 py-2 text-left">Aadhar Name</th>
-                                    <th className="border px-3 py-2 text-left">Aadhar Image</th>
+                                    <th className="border px-3 py-2 text-left">Aadhar Front Image</th>
+                                    <th className="border px-3 py-2 text-left">Aadhar Back Image</th>
                                     <th className="border px-3 py-2 text-left">Comment</th>
                                     <th className="border px-3 py-2 text-left">Action</th>
-                                    {/* <th className="border px-3 py-2 text-left">Edit</th> */}
+                                    <th className="border px-3 py-2 text-left">Edit</th>
                                     <th className="border px-3 py-2 text-left">View</th>
                                 </tr>
                             </thead>
@@ -95,6 +96,23 @@ export default function Page() {
                                                             <Image
                                                                 src={user.aadharimage}
                                                                 alt="aadharimage"
+                                                                width={48}
+                                                                height={48}
+                                                                className="object-cover w-full h-full"
+                                                            />
+                                                        </Link>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-gray-500 text-sm">N/A</span>
+                                                )}
+                                            </td>
+                                            <td className="border px-3 py-2">
+                                                {user.aadharimageback ? (
+                                                    <div className="w-12 h-12 overflow-hidden border border-gray-300">
+                                                        <Link href={user.aadharimageback} target="_blank">
+                                                            <Image
+                                                                src={user.aadharimageback}
+                                                                alt="aadharimageback"
                                                                 width={48}
                                                                 height={48}
                                                                 className="object-cover w-full h-full"
@@ -206,7 +224,11 @@ export default function Page() {
                                                 </div>
                                             </td>
 
-                                            {/* <td className="border px-3 py-2">Edit</td> */}
+                                            <td className="border px-3 py-2">
+                                                <Link href={`/superadmin/kycupdate/aadharkyc/${user.email}`} className=" bgn px-2 rounded font-semibold text-white">
+                                                    Edit
+                                                </Link>
+                                            </td>
                                             <td className="border px-3 py-2">
                                                 <button
                                                     onClick={() => {
