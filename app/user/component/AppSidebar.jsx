@@ -31,14 +31,14 @@ const navItems = [
             { name: "Product List", path: "/user/OrderForm/productlist", pro: false },
         ],
     },
-    {
-        icon: <UsersRound />,
-        name: "Genealogy",
-        subItems: [
-            { name: "Sales Team", path: "/user/Genealogy/salesteam", pro: false },
-            { name: "Direct DS Code", path: "/user/Genealogy/directds", pro: false },
-        ],
-    },
+    // {
+    //     icon: <UsersRound />,
+    //     name: "Genealogy",
+    //     subItems: [
+    //         { name: "Sales Team", path: "/user/Genealogy/salesteam", pro: false },
+    //         { name: "Direct DS Code", path: "/user/Genealogy/directds", pro: false },
+    //     ],
+    // },
     {
         icon: <CoinsIcon />, name: "Withdrawal", path: "/user/payment",
     },
