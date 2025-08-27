@@ -42,7 +42,7 @@ export default function page() {
 
             <div className="text-gray-700 text-justify space-y-4">
               <p>
-                This notice is published on behalf of the company <strong>Anaadioro Wellness Private Limited</strong>.
+                This notice is published on behalf of the company <strong>Vintage Life Wellness Pvt. Ltd.</strong>.
                 The company hereby advises all direct sellers, consumers, prospects of the company,
                 and anyone engaged with the company:
               </p>
@@ -68,7 +68,7 @@ export default function page() {
                 <p className='text-black font-bold mt-2'>जो कोई भी इससे संबंधित है उसके लिए</p>
               </div>
               <p>
-                यह नोटिस कंपनी <strong>अनादीप्रो वेलनेस प्राइवेट लिमिटेड</strong> की ओर से प्रकाशित किया गया है।
+                यह नोटिस कंपनी <strong>विंटेज लाइफ वेलनेस प्राइवेट लिमिटेड</strong> की ओर से प्रकाशित किया गया है।
                 कंपनी इसके द्वारा सभी प्रत्यक्ष विक्रेताओं, उपभोक्ताओं, कंपनी के प्रॉस्पेक्टस और कंपनी से जुड़े किसी भी व्यक्ति को सलाह देती है:
               </p>
               <p>

@@ -67,6 +67,34 @@ export default function Dashboard() {
   const [panelData, setPanelData] = useState(null);
   const [totalPerformance, setTotalPerformance] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [closingData, setClosingData] = useState([]);
+  const [travelFundData, setTravelFundData] = useState([]);
+
+  const fetchData = () => {
+    if (dscode) {
+      setLoading(true);
+      let url = `/api/userAccount/total/${dscode}`;
+
+
+      axios
+        .get(url)
+        .then((res) => {
+          setMonthlyData(res.data.totalmonthly || 0);
+          setClosingData(res.data.totalclosing || 0);
+          setTravelFundData(res.data.totaltravel || 0);
+        })
+        .catch((err) => {
+          console.error("Error fetching totals:", err);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, [dscode]);
 
   useEffect(() => {
     if (!dscode || !email) return;
@@ -161,21 +189,17 @@ export default function Dashboard() {
         Icon: UserPlus,
       },
 
-    
+
       {
         title: "Pair Matching Income",
-        count:
-          Math.min(
-            panelData.mainUser?.saosp ?? 0,
-            panelData.mainUser?.sgosp ?? 0
-          ) * 10,
+        count: closingData,
         color: "#d64d9b",
         Icon: Wallet,
         type: "currency",
       },
       {
         title: "Star Level Bonus",
-        count: totalPerformance || 0,
+        count: monthlyData || 0,
         color: "#eab308",
         Icon: Award,
         type: "currency",
@@ -183,8 +207,8 @@ export default function Dashboard() {
       {
         title: "Total Income",
         count:
-          (Math.min(panelData.mainUser?.saosp ?? 0, panelData.mainUser?.sgosp ?? 0) * 10) +
-          (totalPerformance || 0),
+          closingData +
+          monthlyData,
         color: "green",
         Icon: Award,
         type: "currency",

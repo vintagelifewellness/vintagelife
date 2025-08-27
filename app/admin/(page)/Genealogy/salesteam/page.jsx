@@ -1,14 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, User, Users, Briefcase, ChevronRight, Share2 } from 'lucide-react';
+import { Search, User, Users, Briefcase, ChevronRight, Share2, ArrowUpCircle } from 'lucide-react';
 import axios from 'axios';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 
 // --- Tree View Styles ---
-// Using a style tag for complex pseudo-element selectors needed for tree lines,
-// which are difficult to achieve with Tailwind alone.
 const TreeStyles = () => (
   <style jsx global>{`
     .tree-container {
@@ -154,38 +152,50 @@ const TreeStyles = () => (
   `}</style>
 );
 
-
 // --- Skeleton Loader Component ---
 const SkeletonLoader = () => (
-    <div className="animate-pulse p-4 md:p-8">
-      <div className="flex justify-center mb-8">
-        <div className="w-full max-w-sm h-28 bg-gray-300 dark:bg-gray-700 rounded-xl"></div>
-      </div>
-      <div className="flex flex-col md:flex-row md:justify-center gap-10">
-        {[...Array(2)].map((_, i) => (
-          <div key={i} className="flex flex-col items-center">
-            <div className="w-48 h-12 bg-gray-300 dark:bg-gray-700 rounded-lg mb-6"></div>
-            <div className="flex flex-col md:flex-row gap-4 w-full">
-               <div className="w-full h-20 bg-gray-200 dark:bg-gray-700/50 rounded-lg"></div>
-               <div className="w-full h-20 bg-gray-200 dark:bg-gray-700/50 rounded-lg"></div>
-            </div>
-          </div>
-        ))}
-      </div>
+  <div className="animate-pulse p-4 md:p-8">
+    <div className="flex justify-center mb-8">
+      <div className="w-full max-w-sm h-28 bg-gray-300 dark:bg-gray-700 rounded-xl"></div>
     </div>
+    <div className="flex flex-col md:flex-row md:justify-center gap-10">
+      {[...Array(2)].map((_, i) => (
+        <div key={i} className="flex flex-col items-center">
+          <div className="w-48 h-12 bg-gray-300 dark:bg-gray-700 rounded-lg mb-6"></div>
+          <div className="flex flex-col md:flex-row gap-4 w-full">
+            <div className="w-full h-20 bg-gray-200 dark:bg-gray-700/50 rounded-lg"></div>
+            <div className="w-full h-20 bg-gray-200 dark:bg-gray-700/50 rounded-lg"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
 );
 
 // --- User/Member Card Component ---
-const UserCard = ({ user, isMainUser = false }) => {
+const UserCard = ({ user, isMainUser = false, onUplineSearch, loggedInUserDsCode }) => {
   const cardClasses = isMainUser
-    ? 'bg-white dark:bg-gray-800 shadow-xl rounded-xl p-4 border-2 border-blue-500'
+    ? 'bg-white dark:bg-gray-800 shadow-xl rounded-xl p-4 border-2 border-blue-500 relative'
     : 'bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 rounded-xl p-3 hover:shadow-md transition-all duration-300 w-full';
-  
+
   const imageSize = isMainUser ? 60 : 40;
   const iconWrapperSize = isMainUser ? 'w-16 h-16' : 'w-10 h-10';
 
+  // Condition to show the button: It's the main user, they have an upline,
+  // AND the displayed user is NOT the logged-in user.
+  const showUplineButton = isMainUser && user.pdscode && user.dscode !== loggedInUserDsCode;
+
   return (
     <div className={cardClasses}>
+      {showUplineButton && (
+        <button
+          onClick={() => onUplineSearch(user.pdscode)}
+          className="absolute top-2 right-2 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/50 transition-colors"
+          title={`Search Upline: ${user.pdscode}`}
+        >
+          <ArrowUpCircle size={20} />
+        </button>
+      )}
       <div className="flex items-start space-x-3">
         <div className={`${iconWrapperSize} flex-shrink-0`}>
           {user?.image ? (
@@ -206,24 +216,47 @@ const UserCard = ({ user, isMainUser = false }) => {
           <p className={`font-bold ${isMainUser ? 'text-lg' : 'text-base'} text-gray-800 dark:text-white truncate`}>
             {user.name || 'N/A'}
           </p>
+          {user.usertype !== undefined && (
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-medium
+      ${user.usertype == "1"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
+                  : user.usertype == "0"
+                    ? "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300"
+                    : user.usertype == "2"
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
+                      : "bg-gray-100 text-gray-800 dark:bg-gray-700/50 dark:text-gray-300"
+                }`}
+            >
+              {user.usertype == "1"
+                ? "Active"
+                : user.usertype == "0"
+                  ? "Not Active"
+                  : user.usertype == "2"
+                    ? "Super Admin"
+                    : "Unknown"}
+            </span>
+          )}
+
           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email || 'No email'}</p>
           {!isMainUser && (
-             <div className="flex items-center gap-2 pt-1">
-                <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">DS Code:</span>
-                <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 px-2 py-0.5 rounded-full font-mono text-xs">
-                    {user.dscode}
-                </span>
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">DS Code:</span>
+              <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 px-2 py-0.5 rounded-full font-mono text-xs">
+                {user.dscode}
+              </span>
+
             </div>
           )}
           {isMainUser && (
-             <div className="mt-2 text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                <p><span className="font-semibold">Mobile:</span> {user.mobileNo || '-'}</p>
-                <div className="flex items-center gap-2 pt-1">
-                    <span className="font-semibold">DS Code:</span>
-                    <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 px-2 py-0.5 rounded-full font-mono">
-                        {user.dscode}
-                    </span>
-                </div>
+            <div className="mt-2 text-xs text-gray-600 dark:text-gray-300 space-y-1">
+              <p><span className="font-semibold">Mobile:</span> {user.mobileNo || '-'}</p>
+              <div className="flex items-center gap-2 pt-1">
+                <span className="font-semibold">DS Code:</span>
+                <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 px-2 py-0.5 rounded-full font-mono">
+                  {user.dscode}
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -233,7 +266,7 @@ const UserCard = ({ user, isMainUser = false }) => {
 };
 
 // --- Tree Node Component ---
-const TreeNode = ({ user, title, onSearch, children, isRoot = false, isGroupNode = false }) => {
+const TreeNode = ({ user, title, onSearch, onUplineSearch, loggedInUserDsCode, children, isRoot = false, isGroupNode = false }) => {
   const nodeContent = isGroupNode ? (
     <div className="px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg shadow-inner flex items-center">
       <Share2 className="h-5 w-5 mr-2 text-gray-500 dark:text-gray-400" />
@@ -242,7 +275,12 @@ const TreeNode = ({ user, title, onSearch, children, isRoot = false, isGroupNode
   ) : (
     <div className="flex items-center gap-2">
       <div className="flex-grow">
-        <UserCard user={user} isMainUser={isRoot} />
+        <UserCard
+          user={user}
+          isMainUser={isRoot}
+          onUplineSearch={onUplineSearch}
+          loggedInUserDsCode={loggedInUserDsCode}
+        />
       </div>
       {!isRoot && (
         <button
@@ -268,7 +306,7 @@ const TreeNode = ({ user, title, onSearch, children, isRoot = false, isGroupNode
 export default function Page() {
   const { data: session } = useSession();
   const [usertype, setUsertype] = useState(null);
-  const [dscode, setDscode] = useState(null);
+  const [dscode, setDscode] = useState(null); // This is the logged-in user's DS Code
   const [dsId, setDsId] = useState('');
   const [searchResult, setSearchResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -282,7 +320,7 @@ export default function Page() {
         if (response.data) {
           const userData = response.data;
           setUsertype(userData.usertype);
-          setDscode(userData.dscode);
+          setDscode(userData.dscode); // Set the logged-in user's DS Code
           setDsId(userData.dscode);
           handleSearch(userData.dscode, userData.usertype, userData.dscode);
         }
@@ -320,10 +358,15 @@ export default function Page() {
       setLoading(false);
     }
   };
-  
+
   const handleMemberSearch = (memberDsCode) => {
     setDsId(memberDsCode);
     handleSearch(memberDsCode);
+  };
+
+  const handleUplineSearch = (uplineDsCode) => {
+    setDsId(uplineDsCode);
+    handleSearch(uplineDsCode);
   };
 
   const handleKeyPress = (e) => {
@@ -346,7 +389,7 @@ export default function Page() {
       <div className="max-w-full mx-auto">
         <div className="sticky top-0 z-20 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md p-4 shadow-sm">
           <div className="max-w-2xl mx-auto">
-            <h2 className="text-xl font-bold mb-3 text-gray-800 dark:text-white flex items-center"><Briefcase className="mr-2 h-5 w-5 text-blue-500"/>Search D.S. Network</h2>
+            <h2 className="text-xl font-bold mb-3 text-gray-800 dark:text-white flex items-center"><Briefcase className="mr-2 h-5 w-5 text-blue-500" />Search D.S. Network</h2>
             <div className="flex items-center space-x-2">
               <input
                 type="text"
@@ -368,24 +411,29 @@ export default function Page() {
         </div>
 
         <div className="tree-container">
-            {loading && <SkeletonLoader />}
-            {error && <p className="text-center text-red-500 bg-red-100 dark:bg-red-900/50 p-4 rounded-lg">{error}</p>}
-            
-            {searchResult && (
-                <div className="tree">
-                    <ul>
-                        <TreeNode user={searchResult.user} isRoot={true}>
-                            {groupedMembers && Object.entries(groupedMembers).map(([groupName, members]) => (
-                                <TreeNode key={groupName} title={`Group: ${groupName}`} isGroupNode={true}>
-                                    {members.map(member => (
-                                        <TreeNode key={member.id || member.dscode} user={member} onSearch={handleMemberSearch} />
-                                    ))}
-                                </TreeNode>
-                            ))}
-                        </TreeNode>
-                    </ul>
-                </div>
-            )}
+          {loading && <SkeletonLoader />}
+          {error && <p className="text-center text-red-500 bg-red-100 dark:bg-red-900/50 p-4 rounded-lg">{error}</p>}
+
+          {searchResult && (
+            <div className="tree">
+              <ul>
+                <TreeNode
+                  user={searchResult.user}
+                  isRoot={true}
+                  onUplineSearch={handleUplineSearch}
+                  loggedInUserDsCode={dscode} // Pass the logged-in user's dscode
+                >
+                  {groupedMembers && Object.entries(groupedMembers).map(([groupName, members]) => (
+                    <TreeNode key={groupName} title={`Group: ${groupName}`} isGroupNode={true}>
+                      {members.map(member => (
+                        <TreeNode key={member.id || member.dscode} user={member} onSearch={handleMemberSearch} />
+                      ))}
+                    </TreeNode>
+                  ))}
+                </TreeNode>
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>
