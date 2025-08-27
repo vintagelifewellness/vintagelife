@@ -64,87 +64,88 @@ export default function Page() {
 
   // ✅ Filter only levels with trip assigned
   const tripLevels = useMemo(() => {
-    return levels.filter((level) => level.tour && level.tour.trim() !== "");
-  }, [levels]);
+    return levels
+      .filter((level) => level.tour && level.tour.trim() !== "")
+      .sort((a, b) => Number(a.sao) - Number(b.sao)); 
+}, [levels]);
+    // ✅ Find user's current trip index
+    const currentTripLevelIndex = useMemo(() => {
+      return tripLevels.findIndex((lvl) => lvl.level_name === userLevel);
+    }, [tripLevels, userLevel]);
 
-  // ✅ Find user's current trip index
-  const currentTripLevelIndex = useMemo(() => {
-    return tripLevels.findIndex((lvl) => lvl.level_name === userLevel);
-  }, [tripLevels, userLevel]);
+    if (loading) {
+      return (
+        <div className="p-6">
+          <h2 className="text-2xl font-bold mb-6 text-center">My Trips</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="p-4 rounded-xl shadow-md border bg-gray-100 animate-pulse h-24"
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
 
-  if (loading) {
+    if (err) {
+      return (
+        <div className="p-6">
+          <h2 className="text-2xl font-bold mb-6 text-center">My Trips</h2>
+          <p className="text-center text-red-600">{err}</p>
+        </div>
+      );
+    }
+
     return (
       <div className="p-6">
         <h2 className="text-2xl font-bold mb-6 text-center">My Trips</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="p-4 rounded-xl shadow-md border bg-gray-100 animate-pulse h-24"
-            />
-          ))}
+
+        <div className="space-y-4">
+          {tripLevels.map((level, index) => {
+            const isAchieved = index <= currentTripLevelIndex;
+            const isNext = index === currentTripLevelIndex + 1;
+
+            return (
+              <div
+                key={level._id}
+                className={`flex items-center justify-between rounded p-2 shadow-md border transition-all ${isAchieved
+                  ? "bg-green-100 border-green-400"
+                  : isNext
+                    ? "bg-yellow-50 border-yellow-300 opacity-80"
+                    : "bg-gray-100 border-gray-300 opacity-50"
+                  }`}
+              >
+                {/* Level info */}
+                <div>
+                  <h3 className="text-lg font-semibold">{level.level_name}</h3>
+                  <p className="text-gray-600">
+                    ✈️ Trip: <span className="font-medium">{level.tour}</span>
+                    ✈️ sao: <span className="font-medium">{level.sao}</span>
+                  </p>
+                </div>
+
+                {/* Status Badge */}
+                <div>
+                  {isAchieved ? (
+                    <span className="text-sm font-semibold text-green-700 bg-green-200 px-3 py-1 rounded-full">
+                      ✅ Achieved
+                    </span>
+                  ) : isNext ? (
+                    <span className="text-sm font-semibold text-yellow-700 bg-yellow-200 px-3 py-1 rounded-full">
+                      ⏭ Upcoming
+                    </span>
+                  ) : (
+                    <span className="text-sm font-semibold text-gray-500 bg-gray-200 px-3 py-1 rounded-full">
+                      Locked
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
   }
-
-  if (err) {
-    return (
-      <div className="p-6">
-        <h2 className="text-2xl font-bold mb-6 text-center">My Trips</h2>
-        <p className="text-center text-red-600">{err}</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6 text-center">My Trips</h2>
-
-      <div className="space-y-4">
-        {tripLevels.map((level, index) => {
-          const isAchieved = index <= currentTripLevelIndex;
-          const isNext = index === currentTripLevelIndex + 1;
-
-          return (
-            <div
-              key={level._id}
-              className={`flex items-center justify-between rounded p-2 shadow-md border transition-all ${
-                isAchieved
-                  ? "bg-green-100 border-green-400"
-                  : isNext
-                  ? "bg-yellow-50 border-yellow-300 opacity-80"
-                  : "bg-gray-100 border-gray-300 opacity-50"
-              }`}
-            >
-              {/* Level info */}
-              <div>
-                <h3 className="text-lg font-semibold">{level.level_name}</h3>
-                <p className="text-gray-600">
-                  ✈️ Trip: <span className="font-medium">{level.tour}</span>
-                </p>
-              </div>
-
-              {/* Status Badge */}
-              <div>
-                {isAchieved ? (
-                  <span className="text-sm font-semibold text-green-700 bg-green-200 px-3 py-1 rounded-full">
-                    ✅ Achieved
-                  </span>
-                ) : isNext ? (
-                  <span className="text-sm font-semibold text-yellow-700 bg-yellow-200 px-3 py-1 rounded-full">
-                    ⏭ Upcoming
-                  </span>
-                ) : (
-                  <span className="text-sm font-semibold text-gray-500 bg-gray-200 px-3 py-1 rounded-full">
-                    Locked
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
