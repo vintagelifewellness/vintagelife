@@ -74,7 +74,7 @@ export default function Dashboard() {
   const fetchData = () => {
     if (dscode) {
       setLoading(true);
-      let url = `/api/userAccount/total/${dscode}`;
+      let url = `/api/userAccount/totaldashboard/${dscode}`;
 
 
       axios
