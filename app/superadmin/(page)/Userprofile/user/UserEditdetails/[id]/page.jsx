@@ -67,6 +67,7 @@ export default function UpdateUserPage() {
           <h3 className="text-lg font-semibold mb-4 textn">Personal Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Input label="Full Name" name="name" value={formData.name} onChange={handleChange} />
+            <Input label="Father or Husband Name" name="fatherOrHusbandName" value={formData.fatherOrHusbandName} onChange={handleChange} />
             <Input label="Email" name="email" value={formData.email} onChange={handleChange} />
             <Input label="Mobile No" name="mobileNo" value={formData.mobileNo} onChange={handleChange} />
             <Input label="WhatsApp No" name="whatsappNo" value={formData.whatsappNo} onChange={handleChange} />
