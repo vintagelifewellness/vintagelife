@@ -7,7 +7,7 @@ const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes
 const WARNING_TIME = 30 * 1000;         // 30 seconds
 
 export default function ClientAutoLogout() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [showWarning, setShowWarning] = useState(false);
   const [countdown, setCountdown] = useState(WARNING_TIME / 1000);
 
@@ -22,11 +22,9 @@ export default function ClientAutoLogout() {
     setCountdown(WARNING_TIME / 1000);
   };
 
-  // Start the countdown timer
+  // Start countdown
   const startCountdown = () => {
-    if (countdownInterval.current) {
-      clearInterval(countdownInterval.current);
-    }
+    if (countdownInterval.current) clearInterval(countdownInterval.current);
 
     countdownInterval.current = setInterval(() => {
       setCountdown((prev) => {
@@ -39,7 +37,25 @@ export default function ClientAutoLogout() {
     }, 1000);
   };
 
-  // Setup effect when user is authenticated
+  // 🚀 Logout when offline
+  useEffect(() => {
+    const handleOffline = () => {
+      signOut();
+    };
+    window.addEventListener("offline", handleOffline);
+    return () => window.removeEventListener("offline", handleOffline);
+  }, []);
+
+  // 🚀 Logout on tab close
+  useEffect(() => {
+    const handleUnload = () => {
+      navigator.sendBeacon("/api/logout", JSON.stringify({}));
+    };
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
+  }, []);
+
+  // 🚀 Inactivity + warning logic
   useEffect(() => {
     if (status !== 'authenticated') return;
 
