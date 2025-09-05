@@ -26,10 +26,18 @@ export async function PATCH(req) {
 
         const hashedPassword = await bcrypt.hash(data.password, 10);
 
-        await UserModel.updateOne(
+        const updatedUser = await UserModel.findOneAndUpdate(
             { dscode: data.dscode },
-            { $set: { password: hashedPassword ,  plainpassword: data.password, } }
+            { $set: { password: hashedPassword, plainpassword: data.password } }, // ✅ with plain password
+            { new: true }
         );
+
+        if (!updatedUser) {
+            return new Response(
+                JSON.stringify({ success: false, message: "Password update failed!" }),
+                { status: 500 }
+            );
+        }
 
         return new Response(
             JSON.stringify({ success: true, message: "Password updated successfully!" }),
