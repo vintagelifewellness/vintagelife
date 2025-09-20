@@ -52,7 +52,6 @@ export default function UserProfile() {
             axios.get(`/api/userpanel/${userds}`),
           ]);
           setPanelData(panelResponse.data);
-          console.log(panelResponse.data)
         } catch (error) {
           console.error("Error fetching panel data:", error);
           // Optionally, set an error state here to show an error message

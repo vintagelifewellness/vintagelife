@@ -70,26 +70,54 @@ export default function Dashboard() {
   const [monthlyData, setMonthlyData] = useState([]);
   const [closingData, setClosingData] = useState([]);
   const [travelFundData, setTravelFundData] = useState([]);
+  const [currentWeekData, setCurrentWeekData] = useState({ sao: 0, sgo: 0 });
+
+  // const fetchData = () => {
+  //   if (dscode) {
+  //     setLoading(true);
+  //     let url = `/api/userAccount/totaldashboard/${dscode}`;
+
+
+  //     axios
+  //       .get(url)
+  //       .then((res) => {
+  //         setMonthlyData(res.data.totalmonthly || 0);
+  //         setClosingData(res.data.totalclosing || 0);
+  //         setTravelFundData(res.data.totaltravel || 0);
+  //       })
+  //       .catch((err) => {
+  //         console.error("Error fetching totals:", err);
+  //       })
+  //       .finally(() => {
+  //         setLoading(false);
+  //       });
+  //   }
+  // };
 
   const fetchData = () => {
     if (dscode) {
       setLoading(true);
-      let url = `/api/userAccount/totaldashboard/${dscode}`;
 
+      // Fetch totals and current week RP concurrently
+      Promise.all([
+        axios.get(`/api/userAccount/totaldashboard/${dscode}`),
+        axios.get(`/api/userpanel/weak/${dscode}`), // <-- new API
+      ])
+        .then(([totalsRes, weekRes]) => {
+          setMonthlyData(totalsRes.data.totalmonthly || 0);
+          setClosingData(totalsRes.data.totalclosing || 0);
+          setTravelFundData(totalsRes.data.totaltravel || 0);
 
-      axios
-        .get(url)
-        .then((res) => {
-          setMonthlyData(res.data.totalmonthly || 0);
-          setClosingData(res.data.totalclosing || 0);
-          setTravelFundData(res.data.totaltravel || 0);
+          // Update current week RP
+          setCurrentWeekData({
+            sao: weekRes.data.totalSAORP || 0,
+            sgo: weekRes.data.totalSGORP || 0,
+          });
         })
         .catch((err) => {
-          console.error("Error fetching totals:", err);
+          console.error("Error fetching totals or weekly RP:", err);
         })
-        .finally(() => {
-          setLoading(false);
-        });
+        .finally(() => setLoading(false));
     }
   };
   useEffect(() => {
@@ -159,13 +187,13 @@ export default function Dashboard() {
       },
       {
         title: "This Week SAO RP",
-        count: panelData.currentWeekSaoSP || 0,
+        count: currentWeekData.sao || 0,
         color: "#ffb347",
         Icon: Calendar,
       },
       {
         title: "This Week SGO RP",
-        count: panelData.currentWeekSgoSP || 0,
+        count: currentWeekData.sgo || 0,
         color: "#7f55a3",
         Icon: Calendar,
       },
