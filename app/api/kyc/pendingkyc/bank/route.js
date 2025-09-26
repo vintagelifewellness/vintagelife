@@ -4,6 +4,7 @@ import UserModel from "@/model/User";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
+  // Connect to the database
   await dbConnect();
 
   try {
@@ -13,28 +14,50 @@ export async function POST(req) {
     const skip = (page - 1) * limit;
     const dscodeSearch = body.dscode?.trim();
 
-    // Step 1: Build query
-    const query = { bankkyc: false, rejectedbank: false };
+    // Step 1: Find all dscodes from UserModel that have valid bank details,
+    // and apply the dscode search filter here if provided.
+    let userFilter = {
+      $or: [
+        { bankName: { $nin: [null, ""] } },
+        { acnumber: { $nin: [null, ""] } },
+      ]
+    };
+
     if (dscodeSearch) {
-      query.dscode = { $regex: new RegExp(dscodeSearch, "i") };
+      // Apply the search to the UserModel dscode field
+      userFilter.dscode = { $regex: new RegExp(dscodeSearch, "i") };
     }
 
-    // Step 2: Get KYC entries
-    const kycs = await KycModel.find(query)
+    // Fetch the dscodes of all users who match the criteria
+    const usersWithBankDetails = await UserModel.find(userFilter, { dscode: 1, _id: 0 });
+    const dscodesToConsider = usersWithBankDetails.map(u => u.dscode);
+
+    // Step 2: Build the final KycModel query.
+    // This query ensures that the KYC entry is pending AND the associated user has bank details.
+    const kycQuery = {
+      bankkyc: false,
+      rejectedbank: false,
+      dscode: { $in: dscodesToConsider },
+    };
+
+    // Step 3: Total count (based on the final kycQuery, before pagination)
+    const total = await KycModel.countDocuments(kycQuery);
+
+    // Step 4: Get paginated KYC entries
+    const paginatedKycs = await KycModel.find(kycQuery)
       .sort({ updatedAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const dscodes = kycs.map((k) => k.dscode);
+    // Extract the list of dscodes from the paginated KYC documents
+    const paginatedDscodes = paginatedKycs.map((k) => k.dscode);
 
-    // Step 3: Get users for those dscodes
-    const users = await UserModel.find({ dscode: { $in: dscodes } });
-
-    // Step 4: Total count
-    const total = await KycModel.countDocuments(query);
+    // Step 5: Get the actual UserModel documents for the paginated dscodes.
+    // We already know these users have bank details and their KYC is pending.
+    const users = await UserModel.find({ dscode: { $in: paginatedDscodes } });
 
     return NextResponse.json({
-      message: "Users with pending bank KYC fetched",
+      message: "Users with pending bank KYC and populated bank details fetched",
       users,
       pagination: {
         currentPage: page,
