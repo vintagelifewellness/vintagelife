@@ -127,6 +127,7 @@ export default function PendingOrders() {
                             <tr className="bg-gray-100 dark:bg-gray-600 text-sm md:text-base">
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Order No</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">DsId</th>
+                                <th className="border border-gray-300 px-2 md:px-4 py-2">Name</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Mobile Number</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Amount</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Payment Mode</th>
@@ -141,6 +142,7 @@ export default function PendingOrders() {
                                     <tr key={order._id} className="text-center bg-white dark:bg-gray-800 text-sm md:text-base">
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">{order.orderNo}</td>
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">{order.dscode}</td>
+                                        <td className="border border-gray-300 px-2 text-left md:px-4 py-2">{order.dsname}</td>
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">{order.mobileno}</td>
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">{order.netamount}</td>
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">{order.paymentmod}</td>
