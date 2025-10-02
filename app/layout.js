@@ -30,7 +30,7 @@ export default function RootLayout({ children }) {
           <ThemeProvider>
 
             <SidebarProvider>
-              <ClientAutoLogout />
+              {/* <ClientAutoLogout /> */}
               {children}
             </SidebarProvider>
           </ThemeProvider>

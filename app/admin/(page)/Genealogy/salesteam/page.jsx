@@ -394,9 +394,9 @@ export default function Page() {
               <input
                 type="text"
                 value={dsId || ''}
-                onChange={(e) => setDsId(e.target.value)}
-                placeholder="Enter D.S. ID..."
                 disabled
+                onChange={(e) => setDsId(e.target.value)}
+                placeholder="D.S. ID..."
                 className="border border-gray-300 dark:border-gray-600 p-3 rounded-lg w-full text-gray-800 dark:text-white bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 onKeyDown={handleKeyPress}
               />
