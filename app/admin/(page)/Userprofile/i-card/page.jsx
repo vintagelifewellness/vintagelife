@@ -129,8 +129,8 @@ export default function Page() {
                             <div className="h-20 w-20 p-1 bg-white border">
                                 <QRCode value={qrCodeValue} size={72} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />
                             </div>
-                            <div className="text-center">
-                                <div className="w-32 h-8"></div>
+                            <div className="text-center  flex flex-col items-center gap-2">
+                                <div className="items-center"><Image  src="/WhatsApp_Image_2025-11-26_at_12.05.15_979c558a-removebg-preview.png" width="64" alt="Authorised_Signatory" height="39"/></div>
                                 <p className="border-t border-gray-400 text-xs font-semibold pt-1">Authorised Signatory</p>
                             </div>
 
