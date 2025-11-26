@@ -37,8 +37,7 @@ export default function Page() {
         netamount: "",
         remarks: "",
         totalsp: "",
-        outofraj: "",
-        statename:""
+        outofraj: ""
 
     });
 
