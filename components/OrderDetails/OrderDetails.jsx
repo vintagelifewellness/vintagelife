@@ -10,6 +10,7 @@ import { useReactToPrint } from "react-to-print";
 export default function OrderDetails({ data }) {
   const contentRef = useRef(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
+  const [success, setSuccess] = useState(null);
 
   const [orderStatus, setOrderStatus] = useState(data.status);
   const [isLoading, setIsLoading] = useState(false);
@@ -218,7 +219,24 @@ export default function OrderDetails({ data }) {
 
   const netAmountInWords = toWords(Math.round(netAmount));
 
+  const handleDelete = async () => {
+    if (!data._id) return;
 
+    const confirmDelete = confirm("Are you sure you want to delete this Order?");
+    if (!confirmDelete) return;
+
+    setLoading(true);
+    try {
+      await axios.delete(`/api/order/delete/${data._id}`);
+      setSuccess("Order deleted successfully.");
+      location.reload();
+    } catch (error) {
+      console.error("Delete error:", error);
+      setError("Failed to delete user.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <>
       <button
@@ -404,6 +422,14 @@ export default function OrderDetails({ data }) {
           </>
         )}
       </div>
+      <button
+        type="button"
+        onClick={handleDelete}
+        disabled={loading}
+        className="bg-red-600 hover:bg-red-700 text-sm px-4 py-2 rounded text-white transition duration-200 disabled:opacity-50"
+      >
+        Delete Order
+      </button>
     </>
   );
 
