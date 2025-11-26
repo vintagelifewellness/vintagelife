@@ -22,9 +22,9 @@ export const authOptions = {
 
           const passwordMatch = await bcrypt.compare(password, admin.password);
 
-          // if (!passwordMatch) {
-          //   return null;
-          // }
+          if (!passwordMatch) {
+            return null;
+          }
 
           return {
             id: admin._id.toString(), // Convert to string for JWT storage
