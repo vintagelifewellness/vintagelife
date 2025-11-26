@@ -98,26 +98,36 @@ export default function Signup() {
 
 
     const handleVerifyUser = async () => {
-        setVerifying(true);
+
         setReferenceName("");
         setErrors((prev) => ({ ...prev, pdscode: "" }));
 
+        if (!formData.group) {
+            toast.error("Please select Group (SAO / SGO) before verifying!");
+            setVerifying(false);
+            return;
+        }
+
         try {
-            const res = await axios.get(`/api/user/checkrefer/${formData.pdscode}`);
+            const res = await axios.get(`/api/user/checkrefer/${formData.pdscode}?group=${formData.group}`);
+
             if (res.data.success) {
-                setReferenceName(res.data.name);
-                toast.success("User verified successfully!");
+                const { name, message } = res.data;
+
+                setReferenceName(name);
+                setVerifying(true);
+                toast.success(`${name} verified! ${message}`);
             } else {
-                setErrors((prev) => ({ ...prev, pdscode: "User not found!" }));
-                toast.error("User not found!");
+                toast.error(res.data.message || "Verification failed!");
             }
+
         } catch (err) {
-            setErrors((prev) => ({ ...prev, pdscode: "Verification failed!" }));
             toast.error("Verification failed!");
         } finally {
             setVerifying(false);
         }
     };
+
 
 
     const validateFields = () => {
@@ -635,13 +645,25 @@ export default function Signup() {
                             </div>
                             <div className="lg:col-span-1">
                                 <label className="text-gray-700 text-sm font-semibold">Group</label>
-                                <select name="group" value={formData.group} onChange={handleChange} className="block w-full px-4 py-3 text-gray-500 bg-white border border-gray-200 rounded-md appearance-none placeholder:text-gray-400 focus:border-[#161950] focus:outline-none focus:ring-[#161950] sm:text-sm">
+
+                                <select
+                                    name="group"
+                                    value={formData.group}
+                                    onChange={handleChange}
+                                    disabled={verifying || referenceName !== ""}
+                                    className={`block w-full px-4 py-3 text-gray-500 bg-white border 
+        border-gray-200 rounded-md appearance-none placeholder:text-gray-400 
+        focus:border-[#161950] focus:outline-none focus:ring-[#161950] sm:text-sm
+        ${verifying || referenceName !== "" ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                                >
                                     <option value="" disabled>Select</option>
                                     <option value="SAO">SAO</option>
                                     <option value="SGO">SGO</option>
                                 </select>
+
                                 {errors.group && <p className="text-red-500 text-xs">{errors.group}</p>}
                             </div>
+
 
 
                             <div className="lg:col-span-1">
@@ -683,7 +705,6 @@ export default function Signup() {
                             </div> */}
 
 
-
                             <div className="lg:col-span-1">
                                 <label className="text-gray-700 text-sm font-semibold">Reference Ds Id.</label>
                                 <div className="flex gap-2">
@@ -693,19 +714,27 @@ export default function Signup() {
                                         value={formData.pdscode}
                                         onChange={handleChange}
                                         placeholder="Enter DS Code"
-                                        className="block uppercase w-full px-4 py-3 text-gray-500 bg-white border border-gray-200 rounded-md placeholder:text-gray-400 focus:border-[#161950] focus:outline-none focus:ring-[#161950] sm:text-sm"
+                                        disabled={verifying || referenceName !== ""}
+                                        className={`block uppercase w-full px-4 py-3 text-gray-500 bg-white border border-gray-200 rounded-md 
+            placeholder:text-gray-400 focus:border-[#161950] focus:outline-none focus:ring-[#161950] sm:text-sm
+            ${verifying || referenceName !== "" ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                         required
                                     />
+
                                     <button
                                         type="button"
                                         onClick={handleVerifyUser}
-                                        className="px-3 py-2 bg-[#161950] text-white rounded-md text-sm"
+                                        disabled={verifying || referenceName !== "" || !formData.pdscode}
+                                        className={`px-3 py-2 rounded-md text-sm text-white
+            ${verifying || referenceName !== "" || !formData.pdscode ? "bg-gray-400 cursor-not-allowed" : "bg-[#161950]"}`}
                                     >
-                                        {verifying ? "Checking..." : "Verify"}
+                                        {verifying ? "Checking..." : referenceName !== "" ? "Verified" : "Verify"}
                                     </button>
                                 </div>
+
                                 {errors.pdscode && <p className="text-red-500 text-xs mt-1">{errors.pdscode}</p>}
                             </div>
+
 
                             <div className="lg:col-span-1">
                                 <label className="text-gray-700 text-sm font-semibold">Reference Name</label>
