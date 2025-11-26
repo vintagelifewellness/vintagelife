@@ -37,6 +37,7 @@ export default function Page() {
         netamount: "",
         remarks: "",
         totalsp: "",
+        outofraj: ""
     });
 
     useEffect(() => {
@@ -146,13 +147,13 @@ export default function Page() {
         const requiredFields = [
             "date", "dscode", "dsname", "address", "mobileno",
             "shippingAddress", "shippingmobile", "shippinpPincode",
-            "paymentmod", "salegroup", "netamount", "totalsp"
+            "paymentmod", "salegroup", "netamount", "totalsp", "outofraj","remarks",
         ];
 
         for (let field of requiredFields) {
             if (!formData[field]) {
-                setFormError(`Please fill the required field: ${field}`);
-                 setSubmitting(false);
+                setFormError(`Please Fill  All Required Field:`);
+                setSubmitting(false);
                 return;
             }
         }
@@ -229,7 +230,7 @@ export default function Page() {
                             <SelectField
                                 label="Medium of Payment"
                                 name="paymentmod"
-                                options={["Cash","Online"]}
+                                options={["Cash", "Online"]}
                                 value={formData.paymentmod}
                                 onChange={handleChange}
                             />
@@ -247,6 +248,10 @@ export default function Page() {
                             <InputField label="Total RP" name="totalsp" defaultValue={formData.totalsp} disabled />
                             <InputField label="Shipping Charge" name="shippingcharge" defaultValue={formData.shippingcharge} disabled />
                             <SelectField label="Sale Group" name="salegroup" options={["SAO", "SGO"]} value={formData.salegroup} onChange={handleChange} required />
+                            <SelectField label="Out Of Rajasthan" name="outofraj" options={["YES", "NO"]} value={formData.outofraj} onChange={handleChange} required />
+                            <InputField label="State Name" name="remarks" defaultValue={formData.remarks} onChange={handleChange} required />
+
+
                         </tbody>
                     </table>
 

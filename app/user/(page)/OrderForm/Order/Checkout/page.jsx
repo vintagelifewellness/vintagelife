@@ -37,6 +37,9 @@ export default function Page() {
         netamount: "",
         remarks: "",
         totalsp: "",
+        outofraj: "",
+        statename:""
+
     });
 
     useEffect(() => {
@@ -146,13 +149,13 @@ export default function Page() {
         const requiredFields = [
             "date", "dscode", "dsname", "address", "mobileno",
             "shippingAddress", "shippingmobile", "shippinpPincode",
-            "paymentmod", "salegroup", "netamount", "totalsp"
+            "paymentmod", "salegroup", "netamount", "totalsp", "outofraj","remarks"
         ];
 
         for (let field of requiredFields) {
             if (!formData[field]) {
-                setFormError(`Please fill the required field: ${field}`);
-                 setSubmitting(false);
+                setFormError(`Please fill the required field`);
+                setSubmitting(false);
                 return;
             }
         }
@@ -246,7 +249,9 @@ export default function Page() {
                             <InputField label="Net Amount" name="netamount" defaultValue={formData.netamount} disabled />
                             <InputField label="Total RP" name="totalsp" defaultValue={formData.totalsp} disabled />
                             <InputField label="Shipping Charge" name="shippingcharge" defaultValue={formData.shippingcharge} disabled />
-                            {/* <SelectField label="Sale Group" name="salegroup" options={["SAO", "SGO"]} value={formData.salegroup} onChange={handleChange} required /> */}
+                            <SelectField label="Out Of Rajasthan" name="outofraj" options={["YES", "NO"]} value={formData.outofraj} onChange={handleChange} required />
+                            <InputField label="Shipping State" name="remarks"   defaultValue={formData.remarks} onChange={handleChange} required />
+
                         </tbody>
                     </table>
 

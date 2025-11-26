@@ -29,6 +29,8 @@ const OrderSchema = new Schema(
         deliver: { type: Boolean, required: true, default: false },
         deliverdate: { type: Date, },
         totalsp: { type: String, required: true },
+        outofraj: { type: String, enum: ["YES", "NO"], },
+        statename: { type: String, required: true,default: "Raj"  },
         defaultdata: { type: String, required: true, default: "Order" }
 
     },
