@@ -68,6 +68,57 @@ export default function Page() {
         : [...prev, dsid]
     )
   }
+ const handleSuccess = async (id, utr) => {
+    // if (!utr || utr.trim() === '') return alert('UTR is required for success');
+
+    try {
+      const res = await fetch('/api/closing/updatetravel', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          updateData: {
+            utr,
+            status: true,
+            statusapprovedate: new Date(),
+          },
+        }),
+      });
+
+      const result = await res.json();
+      alert(result.message || 'Marked as Success');
+      fetchData(currentPage);
+    } catch (error) {
+      console.error('Success update failed:', error);
+      alert('Failed to mark as success.');
+    }
+  };
+
+
+  const handleInvalid = async (id, reason) => {
+    if (!reason || reason.trim() === '') return alert('Invalid reason is required');
+
+    try {
+      const res = await fetch('/api/closing/updatetravel', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          updateData: {
+            invalidresn: reason,
+            invalidstatus: true, // optional: add status if needed
+          },
+        }),
+      });
+
+      const result = await res.json();
+      alert(result.message || 'Marked as Invalid');
+      fetchData(currentPage);
+    } catch (error) {
+      console.error('Invalid update failed:', error);
+      alert('Failed to mark as invalid.');
+    }
+  };
 
   return (
     <div className="p-4 space-y-6">
@@ -114,6 +165,8 @@ export default function Page() {
                 <th className="p-3 border">Amount</th>
                 <th className="p-3 border">Pay Amount</th>
                 <th className="p-3 border">Date</th>
+                <th className="p-3 border">Approve/Invalid</th>
+
               </tr>
             </thead>
             <tbody>
@@ -134,6 +187,51 @@ export default function Page() {
                   <td className="p-3 border">{item.amount}</td>
                   <td className="p-3 border">{item.payamount}</td>
                   <td className="p-3 border">{item.date}</td>
+                  <td className="p-3 border space-y-1">
+                    {/* Input for Success */}
+                    <div className=' flex gap-2'>
+
+                      <input
+                        type="text"
+                        placeholder="UTR"
+                        value={item.successInput || ''}
+                        onChange={(e) => {
+                          const newData = [...data];
+                          newData[index].successInput = e.target.value;
+                          setData(newData);
+                        }}
+                        className=" border rounded px-2 py-1 text-sm w-36"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Invalid Reason"
+                        value={item.invalidInput || ''}
+                        onChange={(e) => {
+                          const newData = [...data];
+                          newData[index].invalidInput = e.target.value;
+                          setData(newData);
+                        }}
+                        className=" border rounded px-2 py-1 text-sm w-36"
+                      />
+                    </div>
+                    <div className=' flex gap-2'>
+                      <button
+                        onClick={() => handleSuccess(item._id, item.successInput)}
+                        className="bg-green-500 text-white px-2 py-1 rounded text-xs w-36"
+                      >
+                        Success
+                      </button>
+
+                      {/* Input for Invalid */}
+
+                      <button
+                        onClick={() => handleInvalid(item._id, item.invalidInput)}
+                        className="bg-red-500 text-white px-2 py-1 rounded text-xs w-36"
+                      >
+                        Invalid
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
