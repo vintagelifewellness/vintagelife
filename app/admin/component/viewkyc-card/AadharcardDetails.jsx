@@ -130,7 +130,7 @@ export default function AadharcardDetails() {
     <>
       <div className="rounded bordernormal p-2 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
         {fetching ? (
-          <p className="text-gray-400">Loading KYC status...</p>
+          <p className="text-gray-400">Loading KYC status..</p>
         ) : kyc ? (
           <p>
             {kyc.rejectedaadhar ? (
