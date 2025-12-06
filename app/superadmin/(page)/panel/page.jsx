@@ -128,6 +128,8 @@ export default function Page() {
             dataKey: "todayGreen",
             Icon: CheckCircle,
             color: "text-teal-600",
+            href: "/superadmin/todaygreen",
+
         },
         {
             title: "Success Withdrawals (Pair)",
