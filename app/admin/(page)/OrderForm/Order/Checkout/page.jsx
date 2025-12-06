@@ -87,7 +87,7 @@ export default function Page() {
                 const allProductDetails = cartData.flatMap(entry => entry.productDetails || []);
                 const totalNetAmount = cartData.reduce((sum, entry) => sum + parseFloat(entry.netamount || "0"), 0);
                 const totalSp = cartData.reduce((sum, entry) => sum + parseFloat(entry.totalsp || "0"), 0);
-                const shippingCharge = totalNetAmount > 2000 ? 0 : 70;
+                const shippingCharge = totalNetAmount > 1000 ? 0 : 70;
 
                 setFormData(prev => ({
                     ...prev,
