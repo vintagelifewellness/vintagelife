@@ -356,7 +356,16 @@ export default function OrderDetails({ data }) {
               <td className="border p-1">{totals.totalSGST.toFixed(2)}</td>
               <td className="border p-1">{totals.totalIGST.toFixed(2)}</td>
               <td className="border p-1"></td>
-              <td className="border p-1"></td>
+              <td className="border p-1">
+                {data.productDetails
+                  .reduce((acc, product) => {
+                    const matched = getProductDetails(product.product);
+                    const qty = Number(product.quantity) || 0;
+                    return acc + (matched ? matched.sp * qty : 0);
+                  }, 0)
+                  .toFixed(2)}
+              </td>
+
 
               <td className="border p-1">{totals.totalDP.toFixed(2)}</td>
             </tr>
