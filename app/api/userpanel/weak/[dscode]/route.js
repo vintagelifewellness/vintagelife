@@ -18,7 +18,7 @@ export async function GET(request, { params }) {
                 message: "User not found",
             });
         }
-        const activationDate = user.activationDate;
+        const activationDate = user.activedate;
 
         // 2. Define "current week" based on Thursday 5 PM
         const now = moment();
