@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
+import OrderModel from "@/model/Order";
 import bcrypt from "bcryptjs";
 
 export async function PATCH(req) {
@@ -23,9 +24,16 @@ export async function PATCH(req) {
     if (data.password) {
       data.password = await bcrypt.hash(data.password, 10);
     }
+    const isNameUpdated =
+      data.name && data.name !== user.name;
 
     await UserModel.updateOne({ _id: data.id }, { $set: data });
-
+    if (isNameUpdated && user.dscode) {
+      await OrderModel.updateMany(
+        { dscode: user.dscode },
+        { $set: { dsname: data.name } }
+      );
+    }
     return Response.json({ success: true, message: "User updated successfully!" }, { status: 200 });
   } catch (error) {
     console.error("User update error:", error);
