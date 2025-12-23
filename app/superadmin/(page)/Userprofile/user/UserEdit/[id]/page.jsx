@@ -34,7 +34,8 @@ export default function Page() {
     try {
       setLoading(true);
       const res = await axios.get(`/api/user/find-admin-byemail/${email}`);
-      setUserData(res.data);
+      const { password, ...safeData } = res.data;
+      setUserData(safeData);
       setUserDs(res.data.dscode);
       setFormData((prev) => ({
         ...prev,
@@ -317,7 +318,7 @@ export default function Page() {
         <p className="font-semibold">
           Current Level: <span className="text-blue-600">{userData?.level || "N/A"}</span>
         </p>
-        
+
 
         <p>
           SAO Score: <span className="text-green-600 font-semibold">{saosp || 0}</span>
