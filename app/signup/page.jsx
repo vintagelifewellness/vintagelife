@@ -127,6 +127,12 @@ export default function Signup() {
             setVerifying(false);
         }
     };
+    const handleDeVerifyUser = () => {
+        setReferenceName("");
+        setFormData((prev) => ({ ...prev, pdscode: "" }));
+        setErrors((prev) => ({ ...prev, pdscode: "" }));
+        toast.success("Reference removed");
+    };
 
 
 
@@ -706,7 +712,10 @@ export default function Signup() {
 
 
                             <div className="lg:col-span-1">
-                                <label className="text-gray-700 text-sm font-semibold">Reference Ds Id.</label>
+                                <label className="text-gray-700 text-sm font-semibold">
+                                    Reference DS Id.
+                                </label>
+
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
@@ -715,25 +724,51 @@ export default function Signup() {
                                         onChange={handleChange}
                                         placeholder="Enter DS Code"
                                         disabled={verifying || referenceName !== ""}
-                                        className={`block uppercase w-full px-4 py-3 text-gray-500 bg-white border border-gray-200 rounded-md 
+                                        className={`block uppercase w-full px-4 py-3 text-gray-500 bg-white border border-gray-200 rounded-md
             placeholder:text-gray-400 focus:border-[#161950] focus:outline-none focus:ring-[#161950] sm:text-sm
             ${verifying || referenceName !== "" ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                         required
                                     />
 
-                                    <button
-                                        type="button"
-                                        onClick={handleVerifyUser}
-                                        disabled={verifying || referenceName !== "" || !formData.pdscode}
-                                        className={`px-3 py-2 rounded-md text-sm text-white
-            ${verifying || referenceName !== "" || !formData.pdscode ? "bg-gray-400 cursor-not-allowed" : "bg-[#161950]"}`}
-                                    >
-                                        {verifying ? "Checking..." : referenceName !== "" ? "Verified" : "Verify"}
-                                    </button>
+                                    {/* VERIFY BUTTON */}
+                                    {referenceName === "" && (
+                                        <button
+                                            type="button"
+                                            onClick={handleVerifyUser}
+                                            disabled={verifying || !formData.pdscode}
+                                            className={`px-3 py-2 rounded-md text-sm text-white
+                ${verifying || !formData.pdscode
+                                                    ? "bg-gray-400 cursor-not-allowed"
+                                                    : "bg-[#161950]"}`}
+                                        >
+                                            {verifying ? "Checking..." : "Verify"}
+                                        </button>
+                                    )}
+
+                                    {/* DEVERIFY BUTTON */}
+                                    {referenceName !== "" && (
+                                        <button
+                                            type="button"
+                                            onClick={handleDeVerifyUser}
+                                            className="px-3 py-2 rounded-md text-sm text-white bg-red-600 hover:bg-red-700"
+                                        >
+                                            De-Verify
+                                        </button>
+                                    )}
                                 </div>
 
-                                {errors.pdscode && <p className="text-red-500 text-xs mt-1">{errors.pdscode}</p>}
+                                {/* Verified Name */}
+                                {referenceName && (
+                                    <p className="text-green-600 text-xs mt-1">
+                                        Verified: {referenceName}
+                                    </p>
+                                )}
+
+                                {errors.pdscode && (
+                                    <p className="text-red-500 text-xs mt-1">{errors.pdscode}</p>
+                                )}
                             </div>
+
 
 
                             <div className="lg:col-span-1">
