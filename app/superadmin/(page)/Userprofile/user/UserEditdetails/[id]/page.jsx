@@ -17,8 +17,9 @@ export default function UpdateUserPage() {
     try {
       setLoading(true);
       const res = await axios.get(`/api/user/find-admin-byemail/${email}`);
-      setUserData(res.data);
-      setFormData(res.data);
+      const { password, ...safeUserData } = res.data;
+      setUserData(safeUserData);
+      setFormData(safeUserData);
     } catch (err) {
       toast.error("Failed to fetch user data");
     } finally {
