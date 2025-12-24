@@ -213,7 +213,7 @@ const UserCard = ({ user, isMainUser = false, onUplineSearch, loggedInUserDsCode
           )}
         </div>
         <div className="flex-1 text-left overflow-hidden">
-          <p className={`font-bold ${isMainUser ? 'text-lg' : 'text-base'} text-gray-800 dark:text-white truncate`}>
+          <p className={`font-bold ${isMainUser ? 'text-lg' : 'text-base'} text-gray-800 dark:text-white `}>
             {user.name || 'N/A'}
           </p>
           {user.usertype !== undefined && (
@@ -238,7 +238,7 @@ const UserCard = ({ user, isMainUser = false, onUplineSearch, loggedInUserDsCode
             </span>
           )}
 
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email || 'No email'}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 ">{user.email || 'No email'}</p>
           {!isMainUser && (
             <div className="flex items-center gap-2 pt-1">
               <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">DS Code:</span>
