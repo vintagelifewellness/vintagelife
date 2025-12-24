@@ -13,6 +13,8 @@ export const GET = async (request) => {
   const filter = {
     invalidstatus: false,
     status: false,
+     amount: { $gte: 500 }
+
   };
 
   // Optional: Filter by dscode
