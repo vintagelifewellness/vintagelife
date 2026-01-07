@@ -146,7 +146,7 @@ export async function GET(request) {
           referencename: mainUser.dscode, // Ensure referencename matches
         },
         {
-          type: { $in: ["superadmin gift sp", "superadmin remove sp"] },
+          type: { $in: ["superadmin gift rp", "superadmin remove rp"] },
         }
       ]
     });

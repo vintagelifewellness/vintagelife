@@ -103,7 +103,7 @@ export default function Active({ userData }) {
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-            Active SP
+            Active RP
           </label>
           <select
             name="activesp"
@@ -113,7 +113,7 @@ export default function Active({ userData }) {
             required
             disabled={getOptions().length === 0 || loading} // ✅ Disable during loading
           >
-            <option value="">Select SP</option>
+            <option value="">Select RP</option>
             {getOptions().map((option) => (
               <option key={option} value={option}>
                 {option}
