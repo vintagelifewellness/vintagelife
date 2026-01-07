@@ -1,13 +1,36 @@
 import dbConnect from "@/lib/dbConnect";
 import ClosingHistoryModel from "@/model/ClosingHistory";
 import UserModel from "@/model/User";
-
+import KycModel from "@/model/KycStatus";
 export async function POST(req) {
   await dbConnect();
 
   try {
+
+
+    const approvedKycs = await KycModel.find(
+      { aadharkkyc: true },
+      { dscode: 1 }
+    ).lean();
+
+    const dscodeList = approvedKycs.map(k => k.dscode);
+
+    if (dscodeList.length > 0) {
+      await UserModel.updateMany(
+        { dscode: { $in: dscodeList } },
+        {
+          $set: {
+            "kycVerification.isVerified": true,
+          },
+        }
+      );
+    }
+
     // Step 1: Get only users who have at least one SAO child and one SGO child
-    const potentialUsers = await UserModel.find({});
+    const potentialUsers = await UserModel.find({
+      "kycVerification.isVerified": true,
+    });
+
     const filteredUsers = [];
 
     for (const user of potentialUsers) {

@@ -2,12 +2,37 @@ import dbConnect from "@/lib/dbConnect";
 import MonthlyClosingHistoryModel from "@/model/MonthleClosingHistory";
 import UserModel from "@/model/User";
 import steppending from "@/constanst/StepPending";
+import KycModel from "@/model/KycStatus";
 
 export async function POST(req) {
   await dbConnect();
 
   try {
-    const potentialUsers = await UserModel.find({});
+
+
+
+    const approvedKycs = await KycModel.find(
+      { aadharkkyc: true },
+      { dscode: 1 }
+    ).lean();
+
+    const dscodeList = approvedKycs.map(k => k.dscode);
+
+    if (dscodeList.length > 0) {
+      await UserModel.updateMany(
+        { dscode: { $in: dscodeList } },
+        {
+          $set: {
+            "kycVerification.isVerified": true,
+          },
+        }
+      );
+    }
+
+    // Step 1: Get only users who have at least one SAO child and one SGO child
+    const potentialUsers = await UserModel.find({
+      "kycVerification.isVerified": true,
+    });
     const filteredUsers = [];
 
     // Step 1: Filter users with at least one SAO and one SGO child
