@@ -164,7 +164,8 @@ export default function TDSReportPage() {
                 <th className="p-3 border">DSID</th>
                 <th className="p-3 border">Name</th>
                 <th className="p-3 border">Payable Amount</th>
-                <th className="p-3 border">TDS (5%)</th>
+             <th className="p-3 border">TDS (2%)</th>
+                <th className="p-3 border">Service Charge (3%)</th>
                 <th className="p-3 border">Total</th>
                 <th className="p-3 border">Approve Date</th>
                 <th className="p-3 border">UTR</th>
@@ -179,9 +180,14 @@ export default function TDSReportPage() {
                   <td className="p-3 border text-green-700 font-semibold">
                     ₹ {parseFloat(item.payamount).toLocaleString()}
                   </td>
-                  <td className="p-3 border text-red-600 font-semibold">
-                    ₹ {(item.charges * 1).toFixed(2)}
-                  </td>
+                 <td className="p-3 border text-gray-800">
+  ₹{((parseFloat(item.charges) * 2) / 5).toLocaleString("en-IN")}
+</td>
+
+<td className="p-3 border text-gray-800">
+  ₹{((parseFloat(item.charges) * 3) / 5).toLocaleString("en-IN")}
+</td>
+
                   <td className="p-3 border text-red-600 font-semibold">₹ {item.charges}</td>
                   <td className="p-3 border">
                     {item.statusapprovedate

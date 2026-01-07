@@ -82,7 +82,8 @@ export default function Page() {
               <tr className="bg-gray-100 text-gray-700">
                 <th className="p-3 border">Name</th>
                 <th className="p-3 border text-right">Amount</th>
-                <th className="p-3 border text-right">Charges</th>
+                <th className="p-3 border">TDS (2%)</th>
+                <th className="p-3 border">Service Charge (3%)</th>
                 <th className="p-3 border text-right">Pay Amount</th>
                 <th className="p-3 border">Status Approved Date</th>
               </tr>
@@ -99,17 +100,22 @@ export default function Page() {
                       <td className="p-3 border text-right">
                         ₹{Number(item.amount).toLocaleString("en-IN")}
                       </td>
-                      <td className="p-3 border text-right">
-                        ₹{Number(item.charges).toLocaleString("en-IN")}
+                      <td className="p-3 border text-gray-800">
+                        ₹{((parseFloat(item.charges) * 2) / 5).toLocaleString("en-IN")}
                       </td>
+
+                      <td className="p-3 border text-gray-800">
+                        ₹{((parseFloat(item.charges) * 3) / 5).toLocaleString("en-IN")}
+                      </td>
+
                       <td className="p-3 border text-right">
                         ₹{Number(item.payamount).toLocaleString("en-IN")}
                       </td>
                       <td className="p-3 border text-gray-600">
                         {item.statusapprovedate
                           ? new Date(item.statusapprovedate).toLocaleDateString(
-                              "en-IN"
-                            )
+                            "en-IN"
+                          )
                           : "-"}
                       </td>
                     </tr>
@@ -121,8 +127,13 @@ export default function Page() {
                       ₹{totalAmount.toLocaleString("en-IN")}
                     </td>
                     <td className="p-3 border text-right">
-                      ₹{totalCharges.toLocaleString("en-IN")}
+                      ₹{((totalCharges * 2) / 5).toLocaleString("en-IN")}
                     </td>
+
+                    <td className="p-3 border text-right">
+                      ₹{((totalCharges * 3) / 5).toLocaleString("en-IN")}
+                    </td>
+
                     <td className="p-3 border text-right">
                       ₹{totalPayAmount.toLocaleString("en-IN")}
                     </td>

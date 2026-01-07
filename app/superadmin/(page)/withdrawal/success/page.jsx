@@ -154,7 +154,8 @@ export default function Page() {
                 <th className="p-3 border">IFSC</th>
                 <th className="p-3 border">Bank</th>
                 <th className="p-3 border">Amount</th>
-                <th className="p-3 border">TDS (5%)</th>
+             <th className="p-3 border">TDS (2%)</th>
+                <th className="p-3 border">Service Charge (3%)</th>
                 <th className="p-3 border">Pay Amount</th>
                 <th className="p-3 border">Approve Date</th>
                 <th className="p-3 border">UTR</th>
@@ -175,8 +176,13 @@ export default function Page() {
                   <td className="p-3 border">{item.acnumber || '-'}</td>
                   <td className="p-3 border">{item.ifscCode || '-'}</td>
                   <td className="p-3 border">{item.bankName || '-'}</td>
-                  <td className="p-3 border">{item.amount}</td>
-                  <td className="p-3 border">₹{(item.charges * 1).toFixed(2)}</td> {/* TDS */}
+                  <td className="p-3 border">{item.amount}</td> <td className="p-3 border">
+                    ₹{((item.charges * 2) / 5).toFixed(2)}
+                  </td>
+
+                  <td className="p-3 border">
+                    ₹{((item.charges * 3) / 5).toFixed(2)}
+                  </td>
                   <td className="p-3 border">{item.payamount}</td>
                   <td className="p-3 border">
                     {item.statusapprovedate

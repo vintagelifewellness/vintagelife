@@ -112,7 +112,8 @@ export default function Page() {
               <th className="p-3 border">Sao Rp</th>
               <th className="p-3 border">Sgo Rp</th>
               <th className="p-3 border">Amount</th>
-              <th className="p-3 border">Charges</th>
+            <th className="p-3 border">TDS (2%)</th>
+                <th className="p-3 border">Service Charge (3%)</th>
               <th className="p-3 border">Pay Amount</th>
               <th className="p-3 border">Status Approved Date</th>
             </tr>
@@ -139,9 +140,14 @@ export default function Page() {
                   <td className="p-3 border text-gray-800">
                     ₹{parseFloat(item.amount).toLocaleString("en-IN")}
                   </td>
-                  <td className="p-3 border text-gray-800">
-                    ₹{parseFloat(item.charges).toLocaleString("en-IN")}
-                  </td>
+                 <td className="p-3 border text-gray-800">
+  ₹{((parseFloat(item.charges) * 2) / 5).toLocaleString("en-IN")}
+</td>
+
+<td className="p-3 border text-gray-800">
+  ₹{((parseFloat(item.charges) * 3) / 5).toLocaleString("en-IN")}
+</td>
+
                   <td className="p-3 border text-gray-800">
                     ₹{parseFloat(item.payamount).toLocaleString("en-IN")}
                   </td>
