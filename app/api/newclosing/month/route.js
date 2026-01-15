@@ -12,7 +12,7 @@ export async function POST(req) {
 
 
     const approvedKycs = await KycModel.find(
-      { aadharkkyc: true },
+      { bankkyc: true },
       { dscode: 1 }
     ).lean();
 
