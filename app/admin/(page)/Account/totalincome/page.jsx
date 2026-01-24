@@ -85,6 +85,7 @@ export default function Page() {
                 <th className="p-3 border">TDS (2%)</th>
                 <th className="p-3 border">Service Charge (3%)</th>
                 <th className="p-3 border text-right">Pay Amount</th>
+                <th className="p-3 border">Closing Date</th>
                 <th className="p-3 border">Status Approved Date</th>
               </tr>
             </thead>
@@ -110,6 +111,13 @@ export default function Page() {
 
                       <td className="p-3 border text-right">
                         ₹{Number(item.payamount).toLocaleString("en-IN")}
+                      </td>
+                      <td className="p-3 border text-gray-600">
+                        {item.createdAt
+                          ? new Date(item.createdAt).toLocaleDateString(
+                            "en-IN"
+                          )
+                          : "-"}
                       </td>
                       <td className="p-3 border text-gray-600">
                         {item.statusapprovedate
