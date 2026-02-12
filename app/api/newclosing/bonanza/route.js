@@ -8,13 +8,13 @@ export async function GET(req) {
   try {
     await dbConnect();
 
-    // Get latest bonanza data
+    // 1. Fetch the latest bonanza configuration
     const bonanzaData = await MonthsModel.findOne().sort({ createdAt: -1 });
     if (!bonanzaData) {
       return Response.json({ success: false, message: "No bonanza data found" }, { status: 404 });
     }
 
-    // Create levels requirement map
+    // 2. Map level requirements for fast lookup
     const levelsMap = {};
     for (const levelEntry of bonanzaData.levels) {
       levelsMap[levelEntry.level] = {
@@ -23,45 +23,53 @@ export async function GET(req) {
       };
     }
 
+    // 3. Batch fetch all users in the bonanza list to optimize performance
+    const dsids = bonanzaData.UserDetails.map(detail => detail.dsid);
+    const usersFromDb = await UserModel.find({ dscode: { $in: dsids } });
+    
+    // Create a lookup Map (dscode -> user object)
+    const userMap = new Map(usersFromDb.map(user => [user.dscode, user]));
+
     const qualifiedUsers = [];
 
-    // Loop over each bonanza user detail
+    // 4. Process each user detail
     for (const detail of bonanzaData.UserDetails) {
       const dsid = detail.dsid;
       const prevSaosp = parseFloat(detail.saosp || "0");
       const prevSgosp = parseFloat(detail.sgosp || "0");
       const bonanzaLevel = detail.userlevel || "";
 
-      // Get level requirement from bonanza levels map
       const levelRequirement = levelsMap[bonanzaLevel];
       if (!levelRequirement) continue;
 
-      const requiredSao = levelRequirement.sao;
-      const requiredSgo = levelRequirement.sgo;
-
-      // Get current user sales from UserModel
-      const user = await UserModel.findOne({ dscode: dsid });
+      const user = userMap.get(dsid);
       if (!user) continue;
 
+      // Current values from UserModel
       const userSaosp = parseFloat(user.saosp || "0");
       const userSgosp = parseFloat(user.sgosp || "0");
 
-      // Calculate final targets
-      const targetSaosp = prevSaosp + requiredSao;
-      const targetSgosp = prevSgosp + requiredSgo;
+      // 5. Calculate targets using Math.floor to ignore fractional differences (like the 0.5 issue)
+      const targetSaosp = Math.floor(prevSaosp + levelRequirement.sao);
+      const targetSgosp = Math.floor(prevSgosp + levelRequirement.sgo);
 
-      // Check qualification
+      // 6. Qualification Check
+      // Now: 849 >= 849 will return TRUE
       if (userSaosp >= targetSaosp && userSgosp >= targetSgosp) {
         qualifiedUsers.push({
           username: user.name,
-          dsid,
+          dsid: dsid,
           mobile: user.mobileNo,
-          level: bonanzaLevel, // always from bonanza
+          level: bonanzaLevel,
+          userSaosp: userSaosp,
+          userSgosp: userSgosp,
+          targetSaosp: targetSaosp,
+          targetSgosp: targetSgosp
         });
       }
     }
 
-    // Return users + bonanza details
+    // 7. Return the final structured data
     return Response.json(
       {
         success: true,
