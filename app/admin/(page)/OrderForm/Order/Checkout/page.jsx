@@ -70,6 +70,7 @@ export default function Page() {
                 mobileno: userdata?.mobileNo || "",
                 dsname: userdata?.name || "",
                 address: userdata?.address?.addressLine1 || "",
+                remarks:userdata?.address.state ||""
             }));
         }
     }, [userdata]);
@@ -249,7 +250,7 @@ export default function Page() {
                             <InputField label="Shipping Charge" name="shippingcharge" defaultValue={formData.shippingcharge} disabled />
                             <SelectField label="Sale Group" name="salegroup" options={["SAO", "SGO"]} value={formData.salegroup} onChange={handleChange} required />
                             <SelectField label="Out Of Rajasthan" name="outofraj" options={["YES", "NO"]} value={formData.outofraj} onChange={handleChange} required />
-                            <InputField label="State Name" name="remarks" defaultValue={formData.remarks} onChange={handleChange} required />
+                            <InputField label="State Name" name="remarks" defaultValue={formData.remarks} onChange={handleChange} disabled required />
 
 
                         </tbody>

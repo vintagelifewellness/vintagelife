@@ -71,6 +71,8 @@ export default function Page() {
                 mobileno: userdata?.mobileNo || "",
                 dsname: userdata?.name || "",
                 address: userdata?.address?.addressLine1 || "",
+                remarks:userdata?.address.state ||""
+
             }));
         }
     }, [userdata]);
@@ -249,7 +251,7 @@ export default function Page() {
                             <InputField label="Total RP" name="totalsp" defaultValue={formData.totalsp} disabled />
                             <InputField label="Shipping Charge" name="shippingcharge" defaultValue={formData.shippingcharge} disabled />
                             <SelectField label="Out Of Rajasthan" name="outofraj" options={["YES", "NO"]} value={formData.outofraj} onChange={handleChange} required />
-                            <InputField label="Shipping State" name="remarks"   defaultValue={formData.remarks} onChange={handleChange} required />
+                            <InputField label="Shipping State" name="remarks"   defaultValue={formData.remarks} onChange={handleChange} disabled required />
 
                         </tbody>
                     </table>
