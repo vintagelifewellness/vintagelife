@@ -9,6 +9,7 @@ export const GET = async (request) => {
   const limit = parseInt(searchParams.get("limit") || "20");
   const dscode = searchParams.get("dscode");
   const date = searchParams.get("date");
+  const minAmount = searchParams.get("minAmount");
 
   const filter = {
     invalidstatus: false,
@@ -25,6 +26,13 @@ export const GET = async (request) => {
     const dateEnd = new Date(date);
     dateEnd.setDate(dateEnd.getDate() + 1);
     filter.createdAt = { $gte: dateStart, $lt: dateEnd };
+  }
+
+  if (minAmount) {
+    filter.$expr = {
+      // Converts the string "payamount" to a double/number to check if it's >= the user's input
+      $gte: [{ $toDouble: "$payamount" }, Number(minAmount)]
+    };
   }
 
   try {

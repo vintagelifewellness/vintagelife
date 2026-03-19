@@ -10,13 +10,16 @@ export default function Page() {
   const [selectedIds, setSelectedIds] = useState([])
   const [dsidFilter, setDsidFilter] = useState('')
 
+  const [amountInput, setAmountInput] = useState('') // What the user types
+  const [appliedAmount, setAppliedAmount] = useState('')
+
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
 
 
-  const fetchData = async (page = 1, dscode = '') => {
+  const fetchData = async (page = 1, dscode = '', minAmount = '') => {
     try {
-      const res = await fetch(`/api/withdrawalreport/pending?page=${page}&limit=10&dscode=${dscode}`)
+      const res = await fetch(`/api/withdrawalreport/pending?page=${page}&limit=10&dscode=${dscode}&minAmount=${minAmount}`)
       const result = await res.json()
       if (result.success) {
         setData(result.data)
@@ -29,8 +32,8 @@ export default function Page() {
   }
 
   useEffect(() => {
-    fetchData(currentPage, dsidFilter)
-  }, [currentPage, dsidFilter])
+    fetchData(currentPage, dsidFilter, appliedAmount)
+  }, [currentPage, dsidFilter, appliedAmount])
 
   const handleExport = () => {
     const recordsToExport = selectedIds.length > 0
@@ -64,7 +67,19 @@ export default function Page() {
       setSelectedIds([])
     }
   }
+  const handleApplyFilters = () => {
+    setCurrentPage(1); // Always reset to page 1 when searching
+    setDsidFilter(dsidFilter);
+    setAppliedAmount(amountInput);
+  };
 
+  // Optional: Function to clear filters
+  const handleClearFilters = () => {
+    setAmountInput('');
+    setDsidFilter('');
+    setAppliedAmount('');
+    setCurrentPage(1);
+  };
   const handleCheckboxChange = (dsid) => {
     setSelectedIds(prev =>
       prev.includes(dsid)
@@ -126,18 +141,48 @@ export default function Page() {
   return (
     <div className="p-4 space-y-6">
       <h1 className=' font-semibold underline'>Pending Withdrawal</h1>
-      <div className="flex flex-wrap justify-between gap-4">
-        <input
-          type="text"
-          placeholder="Filter by DSID"
-          className="px-3 py-2 border rounded w-full sm:w-auto"
-          value={dsidFilter}
-          onChange={(e) => {
-            setCurrentPage(1)
-            setDsidFilter(e.target.value)
-          }}
-        />
+      <div className="flex flex-wrap items-center justify-between gap-4">
 
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* DSID Input - Only updates local typing state */}
+          <input
+            type="text"
+            placeholder="Filter by DSID"
+            className="px-3 py-2 border rounded w-full sm:w-auto"
+            value={dsidFilter}
+
+            onChange={(e) => setDsidFilter(e.target.value)}
+          />
+
+          {/* Amount Input - Only updates local typing state */}
+          <input
+            type="number"
+            placeholder="Min Pay Amount"
+            className="px-3 py-2 border rounded w-full sm:w-auto"
+            value={amountInput}
+            onChange={(e) => setAmountInput(e.target.value)}
+          />
+
+          {/* The Single Apply Button */}
+          <button
+            onClick={handleApplyFilters}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          >
+            Apply Filters
+          </button>
+
+          {/* Optional: A clear button is usually good UX when you have an Apply button */}
+          {(dsidFilter || appliedAmount) && (
+            <button
+              onClick={handleClearFilters}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Export Button */}
         <button
           onClick={handleExport}
           className="px-6 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
