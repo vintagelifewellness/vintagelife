@@ -37,7 +37,7 @@ export async function GET(req) {
       const dsid = detail.dsid;
       const prevSaosp = parseFloat(detail.saosp || "0");
       const prevSgosp = parseFloat(detail.sgosp || "0");
-      const bonanzaLevel = detail.userlevel || "";
+      const bonanzaLevel = detail.userlevel || "EXECUTIVE LEADER";
 
       const levelRequirement = levelsMap[bonanzaLevel];
       if (!levelRequirement) continue;
