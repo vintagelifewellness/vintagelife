@@ -24,7 +24,7 @@ export async function GET(request, { params }) {
         const now = moment();
 
         // This week's Thursday 5 PM
-        let thisThursday = moment().isoWeekday(4).hour(17).minute(0).second(0).millisecond(0); // Thursday = 4 in isoWeekday
+        let thisThursday = moment().isoWeekday(3).hour(22).minute(0).second(0).millisecond(0); // Thursday = 4 in isoWeekday
 
         // If today is before Thursday 5 PM, then current week started **last Thursday**
         let weekStart;
