@@ -37,7 +37,8 @@ export default function Page() {
         netamount: "",
         remarks: "",
         totalsp: "",
-        outofraj: ""
+        outofraj: "",
+        ordertype: "Order"
     });
 
     useEffect(() => {
@@ -70,7 +71,7 @@ export default function Page() {
                 mobileno: userdata?.mobileNo || "",
                 dsname: userdata?.name || "",
                 address: userdata?.address?.addressLine1 || "",
-                remarks:userdata?.address.state ||""
+                remarks: userdata?.address.state || ""
             }));
         }
     }, [userdata]);
@@ -148,9 +149,14 @@ export default function Page() {
         const requiredFields = [
             "date", "dscode", "dsname", "address", "mobileno",
             "shippingAddress", "shippingmobile", "shippinpPincode",
-            "paymentmod", "salegroup", "netamount", "totalsp", "outofraj","remarks",
+            "paymentmod", "salegroup", "netamount", "totalsp", "outofraj", "remarks",
         ];
-
+        if (
+            Number(userdata?.activesp) === 50 &&
+            Number(formData?.netamount) >= 10000
+        ) {
+            requiredFields.push("ordertype");
+        }
         for (let field of requiredFields) {
             if (!formData[field]) {
                 setFormError(`Please Fill  All Required Field:`);
@@ -251,7 +257,19 @@ export default function Page() {
                             <SelectField label="Sale Group" name="salegroup" options={["SAO", "SGO"]} value={formData.salegroup} onChange={handleChange} required />
                             <SelectField label="Out Of Rajasthan" name="outofraj" options={["YES", "NO"]} value={formData.outofraj} onChange={handleChange} required />
                             <InputField label="State Name" name="remarks" defaultValue={formData.remarks} onChange={handleChange} disabled required />
-
+                            {
+                                Number(userdata?.activesp) === 50 &&
+                                Number(formData?.netamount) >= 10000 && (
+                                    <SelectField
+                                        label="Order Type"
+                                        name="ordertype"
+                                        options={["Order", "Upgrade"]}
+                                        value={formData.ordertype}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                )
+                            }
 
                         </tbody>
                     </table>
