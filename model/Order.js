@@ -31,6 +31,7 @@ const OrderSchema = new Schema(
         totalsp: { type: String, required: true },
         outofraj: { type: String, enum: ["YES", "NO"], },
         statename: { type: String, required: true,default: "Raj"  },
+        ordertype: { type: String, required: true, default: "Order" },
         defaultdata: { type: String, required: true, default: "Order" }
 
     },
