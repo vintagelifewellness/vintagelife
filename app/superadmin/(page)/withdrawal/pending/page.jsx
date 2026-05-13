@@ -1,99 +1,187 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as XLSX from 'xlsx'
 
 export default function Page() {
   const [data, setData] = useState([])
+
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+
+  // Selection
   const [selectedIds, setSelectedIds] = useState([])
-  const [dsidFilter, setDsidFilter] = useState('')
 
-  const [amountInput, setAmountInput] = useState('') // What the user types
+  // Filters (input state)
+  const [dsidInput, setDsidInput] = useState('')
+  const [amountInput, setAmountInput] = useState('')
+  const [dateInput, setDateInput] = useState('')
+
+  // Applied filters
+  const [appliedDsid, setAppliedDsid] = useState('')
   const [appliedAmount, setAppliedAmount] = useState('')
+  const [appliedDate, setAppliedDate] = useState('')
 
-  const [showModal, setShowModal] = useState(false)
+  // Loading
   const [loading, setLoading] = useState(false)
 
+  // ======================================================
+  // FETCH DATA
+  // ======================================================
 
-  const fetchData = async (page = 1, dscode = '', minAmount = '') => {
+  const fetchData = async (
+    page = 1,
+    dscode = '',
+    minAmount = '',
+    date = ''
+  ) => {
     try {
-      const res = await fetch(`/api/withdrawalreport/pending?page=${page}&limit=10&dscode=${dscode}&minAmount=${minAmount}`)
+      setLoading(true)
+
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: '10',
+      })
+
+      if (dscode) params.append('dscode', dscode)
+      if (minAmount) params.append('minAmount', minAmount)
+      if (date) params.append('date', date)
+
+      const res = await fetch(
+        `/api/withdrawalreport/pending?${params.toString()}`
+      )
+
       const result = await res.json()
+
       if (result.success) {
         setData(result.data)
         setTotalPages(result.totalPages)
         setCurrentPage(result.currentPage)
       }
     } catch (error) {
-      console.error('Failed to fetch data', error)
+      console.error('Fetch failed:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
+  // ======================================================
+  // USE EFFECT
+  // ======================================================
+
   useEffect(() => {
-    fetchData(currentPage, dsidFilter, appliedAmount)
-  }, [currentPage, dsidFilter, appliedAmount])
+    fetchData(
+      currentPage,
+      appliedDsid,
+      appliedAmount,
+      appliedDate
+    )
+  }, [currentPage, appliedDsid, appliedAmount, appliedDate])
+
+  // ======================================================
+  // APPLY FILTERS
+  // ======================================================
+
+  const handleApplyFilters = () => {
+    setCurrentPage(1)
+
+    setAppliedDsid(dsidInput)
+    setAppliedAmount(amountInput)
+    setAppliedDate(dateInput)
+  }
+
+  // ======================================================
+  // CLEAR FILTERS
+  // ======================================================
+
+  const handleClearFilters = () => {
+    setDsidInput('')
+    setAmountInput('')
+    setDateInput('')
+
+    setAppliedDsid('')
+    setAppliedAmount('')
+    setAppliedDate('')
+
+    setCurrentPage(1)
+  }
+
+  // ======================================================
+  // SELECT ALL
+  // ======================================================
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(data.map((item) => item._id))
+    } else {
+      setSelectedIds([])
+    }
+  }
+
+  // ======================================================
+  // SINGLE SELECT
+  // ======================================================
+
+  const handleCheckboxChange = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id]
+    )
+  }
+
+  // ======================================================
+  // EXPORT
+  // ======================================================
 
   const handleExport = () => {
-    const recordsToExport = selectedIds.length > 0
-      ? data.filter(item => selectedIds.includes(item.dsid))
-      : data
+    const recordsToExport =
+      selectedIds.length > 0
+        ? data.filter((item) => selectedIds.includes(item._id))
+        : data
 
-    if (recordsToExport.length === 0) return alert('No records to export.')
+    if (recordsToExport.length === 0) {
+      return alert('No records found')
+    }
 
-    const formatted = recordsToExport.map(item => ({
+    const formatted = recordsToExport.map((item) => ({
       DSID: item.dsid,
       Name: item.name,
       'A/C No': item.acnumber,
       IFSC: item.ifscCode,
       Bank: item.bankName,
       Amount: item.amount,
-      Charges: item.charges,
+      TDS: ((item.charges * 2) / 5).toFixed(2),
+      'Service Charge': ((item.charges * 3) / 5).toFixed(2),
       'Pay Amount': item.payamount,
-      Date: item.date
+      Date: item.date,
     }))
 
     const worksheet = XLSX.utils.json_to_sheet(formatted)
+
     const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Selected Closings')
-    XLSX.writeFile(workbook, 'Pending.xlsx')
-  }
 
-  const handleSelectAll = (e) => {
-    if (e.target.checked) {
-      setSelectedIds(data.map(item => item.dsid))
-    } else {
-      setSelectedIds([])
-    }
-  }
-  const handleApplyFilters = () => {
-    setCurrentPage(1); // Always reset to page 1 when searching
-    setDsidFilter(dsidFilter);
-    setAppliedAmount(amountInput);
-  };
-
-  // Optional: Function to clear filters
-  const handleClearFilters = () => {
-    setAmountInput('');
-    setDsidFilter('');
-    setAppliedAmount('');
-    setCurrentPage(1);
-  };
-  const handleCheckboxChange = (dsid) => {
-    setSelectedIds(prev =>
-      prev.includes(dsid)
-        ? prev.filter(id => id !== dsid)
-        : [...prev, dsid]
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      'Pending Withdrawals'
     )
-  }
-  const handleSuccess = async (id, utr) => {
-    // if (!utr || utr.trim() === '') return alert('UTR is required for success');
 
+    XLSX.writeFile(workbook, 'PendingWithdrawals.xlsx')
+  }
+
+  // ======================================================
+  // SUCCESS
+  // ======================================================
+
+  const handleSuccess = async (id, utr) => {
     try {
       const res = await fetch('/api/closing/updatepair', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           id,
           updateData: {
@@ -102,191 +190,266 @@ export default function Page() {
             statusapprovedate: new Date(),
           },
         }),
-      });
+      })
 
-      const result = await res.json();
-      alert(result.message || 'Marked as Success');
-      fetchData(currentPage);
+      const result = await res.json()
+
+      alert(result.message || 'Success')
+
+      fetchData(
+        currentPage,
+        appliedDsid,
+        appliedAmount,
+        appliedDate
+      )
     } catch (error) {
-      console.error('Success update failed:', error);
-      alert('Failed to mark as success.');
+      console.error(error)
+      alert('Failed')
     }
-  };
+  }
+
+  // ======================================================
+  // INVALID
+  // ======================================================
 
   const handleInvalid = async (id, reason) => {
-    if (!reason || reason.trim() === '') return alert('Invalid reason is required');
+    if (!reason?.trim()) {
+      return alert('Invalid reason required')
+    }
 
     try {
       const res = await fetch('/api/closing/updatepair', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           id,
           updateData: {
             invalidresn: reason,
-            invalidstatus: true, // optional: add status if needed
+            invalidstatus: true,
           },
         }),
-      });
+      })
 
-      const result = await res.json();
-      alert(result.message || 'Marked as Invalid');
-      fetchData(currentPage);
+      const result = await res.json()
+
+      alert(result.message || 'Invalid Updated')
+
+      fetchData(
+        currentPage,
+        appliedDsid,
+        appliedAmount,
+        appliedDate
+      )
     } catch (error) {
-      console.error('Invalid update failed:', error);
-      alert('Failed to mark as invalid.');
+      console.error(error)
+      alert('Failed')
     }
-  };
+  }
 
   return (
     <div className="p-4 space-y-6">
-      <h1 className=' font-semibold underline'>Pending Withdrawal</h1>
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <h1 className="text-xl font-bold underline">
+        Pending Withdrawals
+      </h1>
 
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          {/* DSID Input - Only updates local typing state */}
-          <input
-            type="text"
-            placeholder="Filter by DSID"
-            className="px-3 py-2 border rounded w-full sm:w-auto"
-            value={dsidFilter}
+      {/* ====================================================== */}
+      {/* FILTERS */}
+      {/* ====================================================== */}
 
-            onChange={(e) => setDsidFilter(e.target.value)}
-          />
+      <div className="flex flex-wrap gap-3 items-center">
+        <input
+          type="text"
+          placeholder="Filter by DSID"
+          value={dsidInput}
+          onChange={(e) => setDsidInput(e.target.value)}
+          className="border rounded px-3 py-2"
+        />
 
-          {/* Amount Input - Only updates local typing state */}
-          <input
-            type="number"
-            placeholder="Min Pay Amount"
-            className="px-3 py-2 border rounded w-full sm:w-auto"
-            value={amountInput}
-            onChange={(e) => setAmountInput(e.target.value)}
-          />
+        <input
+          type="number"
+          placeholder="Min Pay Amount"
+          value={amountInput}
+          onChange={(e) => setAmountInput(e.target.value)}
+          className="border rounded px-3 py-2"
+        />
 
-          {/* The Single Apply Button */}
-          <button
-            onClick={handleApplyFilters}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-          >
-            Apply Filters
-          </button>
+        <input
+          type="date"
+          value={dateInput}
+          onChange={(e) => setDateInput(e.target.value)}
+          className="border rounded px-3 py-2"
+        />
 
-          {/* Optional: A clear button is usually good UX when you have an Apply button */}
-          {(dsidFilter || appliedAmount) && (
-            <button
-              onClick={handleClearFilters}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
-            >
-              Clear
-            </button>
-          )}
-        </div>
+        <button
+          onClick={handleApplyFilters}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Apply Filters
+        </button>
 
-        {/* Export Button */}
+        <button
+          onClick={handleClearFilters}
+          className="bg-gray-300 px-4 py-2 rounded"
+        >
+          Clear
+        </button>
+
         <button
           onClick={handleExport}
-          className="px-6 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+          className="bg-yellow-500 text-white px-4 py-2 rounded"
         >
-          Export Selected / All to Excel
+          Export Excel
         </button>
       </div>
 
-      <div className="overflow-auto rounded-xl border border-gray-300 shadow-md">
-        {data.length === 0 ? (
-          <div className="text-center py-10 text-gray-500">No data found</div>
+      {/* ====================================================== */}
+      {/* TABLE */}
+      {/* ====================================================== */}
+
+      <div className="overflow-auto border rounded-xl shadow">
+        {loading ? (
+          <div className="p-10 text-center text-gray-500">
+            Loading...
+          </div>
+        ) : data.length === 0 ? (
+          <div className="p-10 text-center text-gray-500">
+            No Data Found
+          </div>
         ) : (
-          <table className="min-w-full text-sm text-left">
-            <thead className="bg-gray-100 text-gray-700">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-100">
               <tr>
-                <th className="p-3 text-center border">
+                <th className="border p-3 text-center">
                   <input
                     type="checkbox"
-                    checked={selectedIds.length === data.length && data.length > 0}
+                    checked={
+                      selectedIds.length === data.length &&
+                      data.length > 0
+                    }
                     onChange={handleSelectAll}
                   />
                 </th>
-                <th className="p-3 border">DSID</th>
-                <th className="p-3 border">Name</th>
-                <th className="p-3 border">A/C No</th>
-                <th className="p-3 border">IFSC</th>
-                <th className="p-3 border">Bank</th>
-                <th className="p-3 border">Amount</th>
-                <th className="p-3 border">TDS (2%)</th>
-                <th className="p-3 border">Service Charge (3%)</th>
-                <th className="p-3 border">Pay Amount</th>
-                <th className="p-3 border">Date</th>
-                <th className="p-3 border">Approve/Invalid</th>
 
+                <th className="border p-3">DSID</th>
+                <th className="border p-3">Name</th>
+                <th className="border p-3">A/C No</th>
+                <th className="border p-3">IFSC</th>
+                <th className="border p-3">Bank</th>
+                <th className="border p-3">Amount</th>
+                <th className="border p-3">TDS</th>
+                <th className="border p-3">Service Charge</th>
+                <th className="border p-3">Pay Amount</th>
+                <th className="border p-3">Date</th>
+                <th className="border p-3">Action</th>
               </tr>
             </thead>
+
             <tbody>
               {data.map((item, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="p-3 border text-center">
+                <tr
+                  key={item._id}
+                  className="hover:bg-gray-50"
+                >
+                  <td className="border p-3 text-center">
                     <input
                       type="checkbox"
-                      checked={selectedIds.includes(item.dsid)}
-                      onChange={() => handleCheckboxChange(item.dsid)}
+                      checked={selectedIds.includes(item._id)}
+                      onChange={() =>
+                        handleCheckboxChange(item._id)
+                      }
                     />
                   </td>
-                  <td className="p-3 border">{item.dsid}</td>
-                  <td className="p-3 border">{item.name}</td>
-                  <td className="p-3 border">{item.acnumber || '-'}</td>
-                  <td className="p-3 border">{item.ifscCode || '-'}</td>
-                  <td className="p-3 border">{item.bankName || '-'}</td>
-                  <td className="p-3 border">{item.amount}</td>
-                  <td className="p-3 border">
-                    ₹{((item.charges * 2) / 5).toFixed(2)}
+
+                  <td className="border p-3">{item.dsid}</td>
+                  <td className="border p-3">{item.name}</td>
+                  <td className="border p-3">
+                    {item.acnumber || '-'}
+                  </td>
+                  <td className="border p-3">
+                    {item.ifscCode || '-'}
+                  </td>
+                  <td className="border p-3">
+                    {item.bankName || '-'}
+                  </td>
+                  <td className="border p-3">
+                    ₹{item.amount}
                   </td>
 
-                  <td className="p-3 border">
-                    ₹{((item.charges * 3) / 5).toFixed(2)}
+                  <td className="border p-3">
+                    ₹
+                    {((item.charges * 2) / 5).toFixed(2)}
                   </td>
-                  <td className="p-3 border">{item.payamount}</td>
-                  <td className="p-3 border">{item.date}</td>
-                  <td className="p-3 border space-y-1">
-                    {/* Input for Success */}
-                    <div className=' flex gap-2'>
 
-                      <input
-                        type="text"
-                        placeholder="UTR"
-                        value={item.successInput || ''}
-                        onChange={(e) => {
-                          const newData = [...data];
-                          newData[index].successInput = e.target.value;
-                          setData(newData);
-                        }}
-                        className=" border rounded px-2 py-1 text-sm w-36"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Invalid Reason"
-                        value={item.invalidInput || ''}
-                        onChange={(e) => {
-                          const newData = [...data];
-                          newData[index].invalidInput = e.target.value;
-                          setData(newData);
-                        }}
-                        className=" border rounded px-2 py-1 text-sm w-36"
-                      />
-                    </div>
-                    <div className=' flex gap-2'>
-                      <button
-                        onClick={() => handleSuccess(item._id, item.successInput)}
-                        className="bg-green-500 text-white px-2 py-1 rounded text-xs w-36"
-                      >
-                        Success
-                      </button>
+                  <td className="border p-3">
+                    ₹
+                    {((item.charges * 3) / 5).toFixed(2)}
+                  </td>
 
-                      {/* Input for Invalid */}
+                  <td className="border p-3">
+                    ₹{item.payamount}
+                  </td>
 
-                      <button
-                        onClick={() => handleInvalid(item._id, item.invalidInput)}
-                        className="bg-red-500 text-white px-2 py-1 rounded text-xs w-36"
-                      >
-                        Invalid
-                      </button>
+                  <td className="border p-3">
+                    {item.date}
+                  </td>
+
+                  <td className="border p-3">
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="UTR"
+                          value={item.successInput || ''}
+                          onChange={(e) => {
+                            const updated = [...data]
+                            updated[index].successInput =
+                              e.target.value
+                            setData(updated)
+                          }}
+                          className="border px-2 py-1 rounded text-xs"
+                        />
+
+                        <input
+                          type="text"
+                          placeholder="Invalid Reason"
+                          value={item.invalidInput || ''}
+                          onChange={(e) => {
+                            const updated = [...data]
+                            updated[index].invalidInput =
+                              e.target.value
+                            setData(updated)
+                          }}
+                          className="border px-2 py-1 rounded text-xs"
+                        />
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            handleSuccess(
+                              item._id,
+                              item.successInput
+                            )
+                          }
+                          className="bg-green-500 text-white px-3 py-1 rounded text-xs"
+                        >
+                          Success
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            handleInvalid(
+                              item._id,
+                              item.invalidInput
+                            )
+                          }
+                          className="bg-red-500 text-white px-3 py-1 rounded text-xs"
+                        >
+                          Invalid
+                        </button>
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -296,19 +459,33 @@ export default function Page() {
         )}
       </div>
 
-      <div className="flex justify-center items-center mt-4 gap-4">
+      {/* ====================================================== */}
+      {/* PAGINATION */}
+      {/* ====================================================== */}
+
+      <div className="flex justify-center items-center gap-4">
         <button
-          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          onClick={() =>
+            setCurrentPage((prev) => Math.max(prev - 1, 1))
+          }
           disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          className="bg-gray-200 px-4 py-2 rounded disabled:opacity-50"
         >
           Prev
         </button>
-        <span className="text-sm font-semibold">Page {currentPage} of {totalPages}</span>
+
+        <span className="font-medium">
+          Page {currentPage} of {totalPages}
+        </span>
+
         <button
-          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          onClick={() =>
+            setCurrentPage((prev) =>
+              Math.min(prev + 1, totalPages)
+            )
+          }
           disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          className="bg-gray-200 px-4 py-2 rounded disabled:opacity-50"
         >
           Next
         </button>
