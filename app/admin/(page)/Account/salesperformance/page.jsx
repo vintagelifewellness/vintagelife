@@ -115,50 +115,54 @@ export default function Page() {
               <th className="p-3 border">Name</th>
               <th className="p-3 border">Level Name</th>
               <th className="p-3 border">Amount</th>
-            <th className="p-3 border">TDS (2%)</th>
-                <th className="p-3 border">Service Charge (3%)</th>
+              <th className="p-3 border">TDS (2%)</th>
+              <th className="p-3 border">Service Charge (3%)</th>
               <th className="p-3 border">Pay Amount</th>
               <th className="p-3 border">Status Approved Date</th>
             </tr>
           </thead>
           <tbody>
             {data.length > 0 ? (
-              data.map((item) => (
-                <tr
-                  key={item._id}
-                  className="hover:bg-blue-50 transition-colors"
-                >
-                  <td className="p-3 border text-gray-800">{item.name}</td>
+              [...data]
+                .sort(
+                  (a, b) => parseFloat(a.payamount) - parseFloat(b.payamount)
+                )
+                .map((item) => (
+                  <tr
+                    key={item._id}
+                    className="hover:bg-blue-50 transition-colors"
+                  >
+                    <td className="p-3 border text-gray-800">{item.name}</td>
 
-                  <td className="p-3 border text-gray-800">
-                    {(() => {
-                      const levelName = getLevelByBonus(item.amount);
-                      return levelName
-                        ? levelName
-                        : `₹${parseFloat(item.amount).toLocaleString("en-IN")}`;
-                    })()}
-                  </td>
-                  <td className="p-3 border text-gray-800">
-                    ₹{parseFloat(item.amount).toLocaleString("en-IN")}
-                  </td>
-               <td className="p-3 border text-gray-800">
-  ₹{((parseFloat(item.charges) * 2) / 5).toLocaleString("en-IN")}
-</td>
+                    <td className="p-3 border text-gray-800">
+                      {(() => {
+                        const levelName = getLevelByBonus(item.amount);
+                        return levelName
+                          ? levelName
+                          : `₹${parseFloat(item.amount).toLocaleString("en-IN")}`;
+                      })()}
+                    </td>
+                    <td className="p-3 border text-gray-800">
+                      ₹{parseFloat(item.amount).toLocaleString("en-IN")}
+                    </td>
+                    <td className="p-3 border text-gray-800">
+                      ₹{((parseFloat(item.charges) * 2) / 5).toLocaleString("en-IN")}
+                    </td>
 
-<td className="p-3 border text-gray-800">
-  ₹{((parseFloat(item.charges) * 3) / 5).toLocaleString("en-IN")}
-</td>
+                    <td className="p-3 border text-gray-800">
+                      ₹{((parseFloat(item.charges) * 3) / 5).toLocaleString("en-IN")}
+                    </td>
 
-                  <td className="p-3 border text-gray-800">
-                    ₹{parseFloat(item.payamount).toLocaleString("en-IN")}
-                  </td>
-                  <td className="p-3 border text-gray-600">
-                    {item.statusapprovedate
-                      ? new Date(item.statusapprovedate).toLocaleDateString()
-                      : "-"}
-                  </td>
-                </tr>
-              ))
+                    <td className="p-3 border text-gray-800">
+                      ₹{parseFloat(item.payamount).toLocaleString("en-IN")}
+                    </td>
+                    <td className="p-3 border text-gray-600">
+                      {item.statusapprovedate
+                        ? new Date(item.statusapprovedate).toLocaleDateString()
+                        : "-"}
+                    </td>
+                  </tr>
+                ))
             ) : (
               <tr>
                 <td
