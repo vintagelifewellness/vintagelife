@@ -7,7 +7,7 @@ export async function GET(request, { params }) {
     try {
         const dscode = decodeURIComponent(params?.dscode || "");
 
-        const data = await OrderModel.find({ dscode: dscode, status: true, deliver: true });
+        const data = await OrderModel.find({ dscode: dscode, status: true, deliver: true ,deleted: false });
 
         if (!data.length) {
             return Response.json(

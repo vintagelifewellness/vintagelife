@@ -77,6 +77,7 @@ const navItems = [
         subItems: [
             { name: "Approved", path: "/superadmin/order/approvedorder", pro: false },
             { name: "Pending", path: "/superadmin/order/pendingdorder", pro: false },
+            { name: "Recycle Bin", path: "/superadmin/Recyclebin", pro: false },
         ],
     },
 

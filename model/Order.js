@@ -32,7 +32,8 @@ const OrderSchema = new Schema(
         outofraj: { type: String, enum: ["YES", "NO"], },
         statename: { type: String, required: true,default: "Raj"  },
         ordertype: { type: String, required: true, default: "Order" },
-        defaultdata: { type: String, required: true, default: "Order" }
+        defaultdata: { type: String, required: true, default: "Order" },
+        deleted: { type: Boolean, required: true, default: false }
 
     },
     { timestamps: true }

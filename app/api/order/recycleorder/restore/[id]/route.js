@@ -2,7 +2,7 @@ import dbConnect from "@/lib/dbConnect";
 import OrderModel from "@/model/Order";
 import { NextResponse } from "next/server";
 
-export async function DELETE(req, context) {
+export async function PUT(req, context) {
     try {
         await dbConnect();
 
@@ -22,7 +22,7 @@ export async function DELETE(req, context) {
             id,
             {
                 $set: {
-                    deleted: true,
+                    deleted: false,
                 },
             },
             {
