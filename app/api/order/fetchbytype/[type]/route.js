@@ -7,7 +7,7 @@ export async function GET(request, { params }) {
     try {
         const type = decodeURIComponent(params?.type || "");
 
-        const data = await OrderModel.find({  status: type,deleted: false ,orderat:"Main Branch" });
+        const data = await OrderModel.find({ status: type, deleted: false });
 
         if (!data.length) {
             return Response.json(
