@@ -1,0 +1,53 @@
+import dbConnect from "@/lib/dbConnect";
+import CnfModel from "@/model/c&fusers";
+export const GET = async (request) => {
+    await dbConnect();
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "20");
+    // NEW: Get the dynamic search field and value
+    const searchField = searchParams.get("searchField");
+    const searchValue = searchParams.get("searchValue");
+    const date = searchParams.get("date");
+    const filter = {
+        defaultdata: { $in: ["Cnf",] },
+        Cnftype:3,
+    };
+    if (searchField && searchValue) {
+        filter[searchField] = { $regex: searchValue, $options: 'i' };
+    }
+
+    if (date) {
+        const dateStart = new Date(date);
+        const dateEnd = new Date(date);
+        dateEnd.setDate(dateEnd.getDate() + 1);
+        filter.createdAt = { $gte: dateStart, $lt: dateEnd };
+    }
+
+    try {
+        const data = await CnfModel.find(filter)
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        const total = await CnfModel.countDocuments(filter);
+
+        return Response.json(
+            {
+                message: "Data fetched successfully!",
+                success: true,
+                data,
+                total,
+                currentPage: page,
+                totalPages: Math.ceil(total / limit),
+            },
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        return Response.json(
+            { message: "Failed to fetch data", success: false },
+            { status: 500 }
+        );
+    }
+};

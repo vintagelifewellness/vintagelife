@@ -2,6 +2,7 @@ import NextAuth from "next-auth/next";
 import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
+import CnfModel from "@/model/c&fusers";
 import bcrypt from "bcryptjs";
 
 export const authOptions = {
@@ -14,29 +15,56 @@ export const authOptions = {
         const { email, password } = credentials;
         try {
           await dbConnect();
-          const admin = await UserModel.findOne({ email });
 
-          if (!admin) {
-            return null;
+          // 1. Search in UserModel first
+          let user = await UserModel.findOne({ email });
+          let isCnfUser = false;
+
+          // 2. Search in CnfModel if not found in UserModel
+          if (!user) {
+            user = await CnfModel.findOne({ email });
+
+            if (user) {
+              // Validation for Approval Status
+              if (user.Cnftype !== "3") {
+                // This message is caught by res.error in your frontend
+                throw new Error("Your account is not approved yet.");
+              }
+              isCnfUser = true;
+            }
           }
 
-          const passwordMatch = await bcrypt.compare(password, admin.password);
+          // 3. If user still not found in either model
+          if (!user) {
+            throw new Error("No user found with this email.");
+          }
 
+          // 4. Password validation (Safe check to ensure password exists in DB)
+          if (!user.password) {
+            throw new Error("Authentication failed. Please contact admin.");
+          }
+
+          const passwordMatch = await bcrypt.compare(password, user.password);
           if (!passwordMatch) {
-            return null;
+            throw new Error("Invalid password.");
           }
 
+          // 5. Success: Construct user object for JWT
           return {
-            id: admin._id.toString(), // Convert to string for JWT storage
-            email: admin.email,
-            name: admin.name,
-            dscode: admin.dscode,
-            usertype: admin.usertype,
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name || user.cfName || "User",
+            dscode: user.dscode,
+            usertype: isCnfUser ? null : user.usertype,
+            Cnftype: isCnfUser ? user.Cnftype : null,
           };
 
         } catch (error) {
-          console.log("Error:", error);
-          return null;
+          // Log the error for your server logs
+          console.error("Auth Error:", error.message);
+
+          // Throwing the error here is critical for NextAuth to pass it to the frontend
+          throw new Error(error.message);
         }
       },
     }),
@@ -50,16 +78,18 @@ export const authOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;  // Include user id
-        token.usertype = user.usertype;
+        token.id = user.id;
         token.dscode = user.dscode;
+        if (user.usertype) token.usertype = user.usertype; // Add usertype if exists
+        if (user.Cnftype) token.Cnftype = user.Cnftype;    // Add Cnftype if exists
       }
       return token;
     },
     async session({ session, token }) {
-      session.user.id = token.id;  // Pass user id to session
-      session.user.dscode = token.dscode;  // Pass user id to session
-      session.user.usertype = token.usertype;
+      session.user.id = token.id;
+      session.user.dscode = token.dscode;
+      if (token.usertype) session.user.usertype = token.usertype;
+      if (token.Cnftype) session.user.Cnftype = token.Cnftype;
       return session;
     },
   },
