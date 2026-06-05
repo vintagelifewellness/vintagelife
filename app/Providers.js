@@ -17,7 +17,7 @@ const SessionWatcher = ({ children }) => {
 
       timerId = setTimeout(() => {
         // Auto sign out the user after inactivity
-        signOut({ callbackUrl: "/signin" });
+        signOut({ callbackUrl: "/" });
       }, IDLE_TIMEOUT_MS);
     };
 

@@ -16,13 +16,13 @@ export default function Signin() {
   const [email, setEmail] = useState("");
   const [user, setUser] = useState("");
 
-const handleChange = (e) => {
-  const { id, value } = e.target;
-  setFormData((prevState) => ({
-    ...prevState,
-    [id]: id === "dsid" ? value.toUpperCase() : value,
-  }));
-};
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [id]: id === "dsid" ? value.toUpperCase() : value,
+    }));
+  };
 
   const isFormValid = () => {
     return formData.dsid.trim() !== "" && formData.password.trim() !== "";
@@ -74,15 +74,15 @@ const handleChange = (e) => {
         redirect: false,
       });
 
-    if (res?.error) {
-      // res.error contains the "Your account is not approved yet" message
-      toast.error(res.error);
-      setLoading(false);
-      return;
-    }
+      if (res?.error) {
+        // res.error contains the "Your account is not approved yet" message
+        toast.error(res.error);
+        setLoading(false);
+        return;
+      }
 
-     toast.success("Successfully signed in!");
-      
+      toast.success("Successfully signed in!");
+
       const userRoutes = {
         "3": "/cnfpanel", // C&F User
         "0": "/user",     // Normal User
@@ -91,10 +91,10 @@ const handleChange = (e) => {
       };
 
       // YAHAN CHANGE HAI: Agar Cnftype hai toh wo lo, warna usertype lo
-      const userRole = userData.Cnftype || userData.usertype; 
-     
+      const userRole = userData.Cnftype || userData.usertype;
+
       router.push(userRoutes[userRole] || "/");
-      
+
     } catch (error) {
       handleSignInError(error);
     } finally {
@@ -115,6 +115,12 @@ const handleChange = (e) => {
   return (
     <section className="min-h-screen flex flex-col items-center justify-center bgw p-4">
       <Toaster />
+      <Link href="/" className="w-full max-w-2xl mb-6 text-center border *:border-gray-300 rounded-lg p-4 bg-white shadow">
+        Back to{" "}
+        <span className="font-bold textn hover:underline">
+          Home
+        </span>
+      </Link>
       <div className="w-full max-w-4xl flex flex-col md:flex-row bg-white shadow-2xl rounded-2xl overflow-hidden bordernormal">
         {/* Left Side: Form */}
         <div className="w-full relative md:w-1/2 p-8 md:p-12 order-2 md:order-1 flex flex-col justify-center">
@@ -148,7 +154,7 @@ const handleChange = (e) => {
                 disabled={loading}
               />
             </div>
-          
+
             <button
               type="submit"
               disabled={loading}
@@ -165,9 +171,9 @@ const handleChange = (e) => {
               </Link>
             </p>
           </form>
-            <div className=" absolute left-0 bottom-0">
-              <p className=" text-xs bgn px-2 py-1 font-semibold rounded-tr-2xl text-white">Please contact Vintage support for password-related issues.</p>
-            </div>
+          <div className=" absolute left-0 bottom-0">
+            <p className=" text-xs bgn px-2 py-1 font-semibold rounded-tr-2xl text-white">Please contact Vintage support for password-related issues.</p>
+          </div>
         </div>
 
         {/* Right Side: Image and Welcome Message */}

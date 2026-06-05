@@ -5,86 +5,151 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toWords } from 'number-to-words';
 import { useReactToPrint } from "react-to-print";
-
-
-export default function OrderDetails({ data }) {
+export default function OrderDetails({ data, role }) {
   const contentRef = useRef(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
   const [success, setSuccess] = useState(null);
-
   const [orderStatus, setOrderStatus] = useState(data.status);
   const [isLoading, setIsLoading] = useState(false);
   const [deliveryStatus, setDeliveryStatus] = useState(data.deliver);
-  const [newDeliveryDate, setNewDeliveryDate] = useState(
-    data.deliverdate ? new Date(data.deliverdate) : null
-  );
+  const [newDeliveryDate, setNewDeliveryDate] = useState(data.deliverdate ? new Date(data.deliverdate) : null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // --- Handlers for API calls (no changes needed here) ---
+  const [showModal, setShowModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const o = data._id;
+  const isAdmin = typeof window !== "undefined" && window.location.pathname.includes("/superadmin");
+
+
+
   const handleStatusUpdate = async (newStatus) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/order/update/${o}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: data._id, status: newStatus }),
-      });
-      const result = await response.json();
-      if (result.success) {
-        setOrderStatus(newStatus);
 
-        alert(`Order ${newStatus ? 'approved' : 'unapproved'} successfully!`);
-        window.location.reload();
+      const isCandFOrder = data.cfName ? true : false;
+
+      if (isCandFOrder) {
+
+        const totalRpAmount = data.productDetails.reduce((acc, product) => {
+          const matched = getProductDetails(product.product);
+          const qty = Number(product.quantity) || 0;
+          return acc + (matched ? matched.sp * qty : 0);
+        }, 0);
+
+        const response = await fetch(`/api/candf/order-approve`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: data._id,
+            status: newStatus,
+            requiredPoints: totalRpAmount
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          setOrderStatus(newStatus);
+          alert(`C&F Order approved successfully!`);
+          window.location.reload();
+        } else {
+          setErrorMessage(result.message);
+          setShowModal(true);
+        }
       } else {
-        throw new Error(result.message || 'Failed to update status');
+
+        const response = await fetch(`/api/order/update/${data._id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: data._id, status: newStatus }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          setOrderStatus(newStatus);
+          alert(`Main Branch Order approved successfully!`);
+          window.location.reload();
+        } else {
+          alert(`Error: ${result.message || 'Failed'}`);
+        }
       }
     } catch (error) {
-      console.error('Error updating order status:', error);
-      alert('Failed to update order status. Please try again.');
+      console.error('Error:', error);
+      alert("Server Error.");
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleStatusUpdatecancle = async (newStatus) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/order/update/${o}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: data._id, status: newStatus }),
-      });
-      const result = await response.json();
-      if (result.success) {
-        setOrderStatus(newStatus);
-        await fetch("/api/PaymentHistory/add", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+
+      const isCandFOrder = data.cfName ? true : false;
+
+      if (isCandFOrder) {
+
+        const refundAmount = data.totalsp || 0;
+        if (!confirm(`Are you sure you want to cancel this C&F Order? ${refundAmount} points will be refunded.`)) {
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await fetch(`/api/c&f/cancel-order`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            dsid: data.dscode,
-            amount: "0",
-            sp: -Math.abs(data.totalsp),
-            group: data.salegroup,
-            orderno: data.orderNo,
-            type: "order",
+            orderId: data._id
           }),
         });
-        alert(`Order cancelled successfully!`);
-        window.location.reload();
+
+        const result = await response.json();
+
+        if (result.success) {
+          setOrderStatus(newStatus);
+          alert(`C&F Order cancelled! ${refundAmount} points refunded successfully.`);
+          // window.location.reload();
+        } else {
+          throw new Error(result.message || 'Failed to cancel C&F order');
+        }
+
       } else {
-        throw new Error(result.message || 'Failed to update status');
+
+        if (!confirm(`Are you sure you want to cancel this Main Branch Order?`)) {
+          setIsLoading(false);
+          return;
+        }
+
+
+        const response = await fetch(`/api/order/update/${data._id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: data._id, status: newStatus }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          setOrderStatus(newStatus);
+
+          alert(`Main Branch Order cancelled successfully!`);
+          window.location.reload();
+        } else {
+          throw new Error(result.message || 'Failed to update status');
+        }
       }
+
     } catch (error) {
       console.error('Error cancelling order:', error);
-      alert('Failed to cancel order. Please try again.');
+      alert(error.message || 'Failed to cancel order. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
-
+  // 👆 UPDATE KIYA HUA CANCEL FUNCTION END 👆
   const handleDeliveryUpdate = async (newStatus) => {
     setIsLoading(true);
     try {
@@ -107,7 +172,6 @@ export default function OrderDetails({ data }) {
       setIsLoading(false);
     }
   };
-
   const handleDeliveryDateUpdate = async () => {
     if (!newDeliveryDate) {
       return alert('Please select a valid date.');
@@ -132,8 +196,6 @@ export default function OrderDetails({ data }) {
       setIsLoading(false);
     }
   };
-  // --- End of API handlers ---
-
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -149,18 +211,14 @@ export default function OrderDetails({ data }) {
     };
     fetchProducts();
   }, []);
-
   const getProductDetails = (productName) => {
     return products.find((p) => p.productname === productName);
   };
-
   const extractMainValue = (value) => {
     if (!value) return 0;
     const main = value.toString().split("(")[0];
     return Number(main) || 0;
   };
-
-  // --- Corrected Calculation Logic ---
   const totals = {
     totalDP: 0,
     totalSP: 0,
@@ -170,24 +228,18 @@ export default function OrderDetails({ data }) {
     totalIGST: 0,
     totalTaxable: 0,
   };
-
   data.productDetails.forEach((product) => {
     const matched = getProductDetails(product.product);
     if (!matched) return;
-
     const quantity = Number(product.quantity) || 0;
     const dp = Number(matched.dp) || 0;
     const sp = Number(matched.sp) || 0;
-
     const cgst = extractMainValue(matched.cgst);
     const sgst = extractMainValue(matched.sgst);
     const igst = extractMainValue(matched.igst);
-
     const gstPercent =
       data.outofraj === "YES" ? igst : cgst + sgst;
-
     const totalAmount = dp * quantity;
-
     // taxable value (same as table)
     const taxableValue = (totalAmount / (100 + gstPercent)) * 100;
 
@@ -245,7 +297,6 @@ export default function OrderDetails({ data }) {
       >
         Print Invoice
       </button>
-
       <div
         ref={contentRef}
         className="mx-auto my-6 p-4 border border-black rounded bg-white text-[11px] leading-tight max-w-[800px]"
@@ -402,44 +453,96 @@ export default function OrderDetails({ data }) {
         </div>
 
       </div>
-
-      <div className="flex flex-col sm:flex-row gap-3">
-        <button
-          onClick={() => handleStatusUpdate(true)}
-          disabled={orderStatus || isLoading}
-          className={`flex-1 py-2 px-4 rounded text-white font-semibold transition duration-200 ${orderStatus || isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
-        >
-          {isLoading && !orderStatus ? 'Approving...' : 'Approve'}
-        </button>
-        {orderStatus && (
-          <>
+      {isAdmin && (
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Yahan condition lagayi hai: Agar order pending hai toh sirf isAdmin (Super Admin) ko Approve button dikhega. Agar pehle se approved hai, toh sabko disabled dikhega */}
+          {(isAdmin || orderStatus) && (
             <button
-              onClick={() => handleDeliveryUpdate(true)}
-              disabled={deliveryStatus || isLoading}
-              className={`flex-1 py-2 px-4 rounded text-white font-semibold transition duration-200 ${deliveryStatus || isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+              onClick={() => handleStatusUpdate(true)}
+              disabled={orderStatus || isLoading}
+              className={`flex-1 py-2 px-4 rounded text-white font-semibold transition duration-200 ${orderStatus || isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
             >
-              {isLoading && !deliveryStatus ? 'Updating...' : 'Mark as Delivered'}
+              {isLoading && !orderStatus ? 'Approving...' : (orderStatus ? 'Approved' : 'Approve')}
             </button>
-            {!deliveryStatus && (
+          )}
+
+          {orderStatus && (
+            <>
               <button
-                onClick={() => handleStatusUpdatecancle(false)}
-                className="flex-1 py-2 px-4 rounded text-white font-semibold transition duration-200 bg-red-600 hover:bg-red-700"
+                onClick={() => handleDeliveryUpdate(true)}
+                disabled={deliveryStatus || isLoading}
+                className={`flex-1 py-2 px-4 rounded text-white font-semibold transition duration-200 ${deliveryStatus || isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
               >
-                Cancel Order
+                {isLoading && !deliveryStatus ? 'Updating...' : 'Mark as Delivered'}
               </button>
-            )}
-          </>
-        )}
-      </div>
-      <button
-        type="button"
-        onClick={handleDelete}
-        disabled={loading}
-        className="bg-red-600 hover:bg-red-700 text-sm px-4 py-2 rounded text-white transition duration-200 disabled:opacity-50"
-      >
-        Delete Order
-      </button>
+              {/* 'role === "admin"' ki jagah 'isAdmin' use kiya gaya hai */}
+              {isAdmin && !deliveryStatus && (
+                <button
+                  onClick={() => handleStatusUpdatecancle(false)}
+                  className="flex-1 py-2 px-4 rounded text-white font-semibold transition duration-200 bg-red-600 hover:bg-red-700"
+                >
+                  Cancel Order
+                </button>
+              )}
+            </>
+          )}
+        </div>)}
+      {isAdmin && (
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={loading}
+          className="bg-red-600 hover:bg-red-700 text-sm px-4 py-2 rounded text-white transition duration-200 disabled:opacity-50"
+        >
+          Delete Order
+        </button>
+      )}
+      {/* ================= MODAL DESIGN START ================= */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-md transform transition-all text-center animate-fade-in-up">
+
+            {/* Warning Icon */}
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 border-[4px] border-red-100">
+              <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+            </div>
+
+            <h3 className="text-2xl font-extrabold text-gray-900 mb-2">Insufficient Points!</h3>
+
+            <p className="text-sm text-gray-500 mb-4 px-2">
+              Your current point balance is too low to approve this order. Please purchase more points to proceed.
+            </p>
+
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => setShowModal(false)}
+                className="flex-1 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition-colors duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowModal(false);
+
+                }}
+                className="flex-1 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-200 transition-all duration-200 transform hover:scale-[1.02]"
+              >
+                Purchase Points
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+      {/* ================= MODAL DESIGN END ================= */}
+
     </>
+
+
+
   );
 
 }

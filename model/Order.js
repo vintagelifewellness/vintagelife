@@ -30,10 +30,13 @@ const OrderSchema = new Schema(
         deliverdate: { type: Date, },
         totalsp: { type: String, required: true },
         outofraj: { type: String, enum: ["YES", "NO"], },
-        statename: { type: String, required: true,default: "Raj"  },
+        statename: { type: String, required: true, default: "Raj" },
         ordertype: { type: String, required: true, default: "Order" },
         defaultdata: { type: String, required: true, default: "Order" },
-        deleted: { type: Boolean, required: true, default: false }
+        deleted: { type: Boolean, required: true, default: false },
+        orderat: { type: String, enum: ["Main Branch", "C&F"], required: true, default: "Main Branch" },
+        cfName: { type: String },
+        cfId: { type: String }
 
     },
     { timestamps: true }

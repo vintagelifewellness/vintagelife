@@ -96,8 +96,8 @@ export default function Signup() {
     };
 
 
-  
-  
+
+
 
 
     const validateFields = () => {
@@ -224,8 +224,14 @@ export default function Signup() {
     };
     const allChecked = checkboxes.every((item) => item);
     return (
-        <section className="min-h-screen flex items-center justify-center px-4 bg-gray-100">
+        <section className="min-h-screen flex flex-col items-center justify-center px-4 bg-gray-100">
             <Toaster />
+             <Link href="/" className="w-full max-w-2xl mb-6 text-center border *:border-gray-300 rounded-lg p-4 bg-white shadow">
+                Back to{" "}
+                <span className="font-bold textn hover:underline">
+                    Home
+                </span>
+            </Link>
             {showModal && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 backdrop-blur-sm">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 animate-fade-in-up relative overflow-hidden">
@@ -342,7 +348,7 @@ export default function Signup() {
                     )}
                     {step === 3 && (
                         <>
-                         <div className="lg:col-span-2">
+                            <div className="lg:col-span-2">
                                 <label className="text-gray-700 text-sm font-semibold">C&F Agency / Firm Name</label>
                                 <input
                                     type="text"
@@ -408,7 +414,7 @@ export default function Signup() {
                                 </div>
                                 {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
                             </div>
-                       
+
 
 
                             <div className="lg:col-span-1">
