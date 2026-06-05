@@ -135,18 +135,10 @@ export default function CandFProfile() {
             <div className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-4 py-2 rounded-xl font-medium shadow text-center flex items-center justify-center">
               DsId: {userData?.dscode}
             </div>
-<div >
 
-            {/* <Link   href={`../C&fEdit/${userData.email}`} className="flex justify-center items-center px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-md no-underline transition-all duration-300">
+            <Link href={`../C&fEdit/${userData.email}`} className="flex justify-center items-center px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-md no-underline transition-all duration-300">
                 Manage Points / Active Self
-            </Link> */}
-              <span  className="flex justify-center items-center px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-md no-underline transition-all duration-300">
-                Manage Points / Active Self
-            </span>
-            <span>
-              This this currently disable now
-            </span>
-</div>
+            </Link>
             
             <Link href={`../C&fEditdetails/${userData.email}`} className="flex justify-center items-center px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold rounded-lg shadow-sm no-underline border border-blue-300">
                 Edit C&F details

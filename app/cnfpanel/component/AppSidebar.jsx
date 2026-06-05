@@ -28,12 +28,20 @@ const navItems = [
     },
      {
         icon: <BookOpenText />,
-        name: "Withdrawal",
+        name: "comission",
         subItems: [
           
-            { name: "invalid", path: "/cnfpanel/Withdrawal/invalid", pro: false },
-            { name: "pending", path: "/cnfpanel/Withdrawal/pending", pro: false },
-               { name: "success", path: "/cnfpanel/Withdrawal/success", pro: false },
+            { name: "comission", path: "/cnfpanel/comission", pro: false },
+          
+         
+        ],
+    },
+     {
+        icon: <BookOpenText />,
+        name: "RequestToSuperadmin",
+        subItems: [
+          
+            { name: "RequestToSuperadmin", path: "/cnfpanel/RequestToSuperadmin", pro: false },
          
         ],
     },

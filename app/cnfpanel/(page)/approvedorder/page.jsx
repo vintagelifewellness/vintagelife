@@ -6,14 +6,14 @@ import OrderDetails from "@/components/OrderDetails/OrderDetails";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 export default function ApprovedOrders() {
-    const { data: session, status } = useSession(); 
-    
+    const { data: session, status } = useSession();
+
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
     const [orderNoFilter, setOrderNoFilter] = useState("");
     const [dscodeFilter, setDscodeFilter] = useState("");
     const [allOrders, setAllOrders] = useState([]);
-    const [filteredOrders, setFilteredOrders] = useState([]);   
+    const [filteredOrders, setFilteredOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null);
     useEffect(() => {
@@ -24,16 +24,16 @@ export default function ApprovedOrders() {
     const fetchOrders = async (dscode) => {
         setLoadingOrders(true);
         try {
-        
+
             const response = await axios.get(`/api/c&f/cnf/${dscode}`);
             const result = response.data;
-            
+
             if (result.success) {
-              
+
                 const approvedOnly = result.recentOrders.filter(
                     order => order.status === true || order.status === "Completed" || order.status === "1"
                 );
-                
+
                 setAllOrders(approvedOnly);
                 setFilteredOrders(approvedOnly);
             }
@@ -46,13 +46,13 @@ export default function ApprovedOrders() {
 
     const applyFilter = () => {
         const filtered = allOrders.filter((order) => {
-          
+
             const orderDate = order.date ? order.date.split("T")[0] : "";
-            
+
             const matchesDate = (!dateFrom || orderDate >= dateFrom) && (!dateTo || orderDate <= dateTo);
             const matchesOrderNo = !orderNoFilter || (order.orderNo && order.orderNo.toLowerCase().includes(orderNoFilter.toLowerCase()));
             const matchesDscode = !dscodeFilter || (order.dscode && order.dscode.toLowerCase().includes(dscodeFilter.toLowerCase()));
-            
+
             return matchesDate && matchesOrderNo && matchesDscode;
         });
         setFilteredOrders(filtered);
@@ -74,15 +74,27 @@ export default function ApprovedOrders() {
     const closeModal = () => {
         setSelectedOrder(null);
     };
-
+    // Yahan Total RP calculate hoga
+    const totalRP = filteredOrders.reduce((sum, order) => sum + (Number(order.totalsp) || 0), 0);
     if (status === "loading") {
         return <div className="min-h-screen flex items-center justify-center text-xl font-bold">Loading...</div>;
     }
 
     return (
+
         <div className="max-w-7xl mx-auto lg:p-6 p-3 bg-white dark:bg-gray-700 shadow-lg rounded-lg text-gray-700 dark:text-white">
             <h2 className="text-2xl font-semibold mb-4 text-center">My Approved Order List</h2>
-
+            {/* Yahan border wala box Total RP dikhayega */}
+            <div className="flex items-center justify-end">
+                <div className="mb-6 max-w-sm py-4 px-20 border-2 border-green-500 bg-green-50 dark:bg-gray-800 rounded-xl text-center shadow-sm ">
+                    <h3 className="text-lg font-medium text-green-700 dark:text-green-400">
+                        Total RP
+                    </h3>
+                    <p className="text-3xl font-bold text-green-800 dark:text-green-300">
+                        {totalRP}
+                    </p>
+                </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <div>
                     <label className="block text-sm font-medium">Date From</label>

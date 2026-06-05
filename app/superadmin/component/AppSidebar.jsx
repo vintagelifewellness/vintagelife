@@ -44,6 +44,7 @@ const navItems = [
             { name: "Pending C&F Registration", path: "/superadmin/C&F/pendingregistration", pro: false },
             { name: "Approved C&F Orders", path: "/superadmin/C&F/approvedorders", pro: false },
             { name: "Pending C&F Orders", path: "/superadmin/C&F/pendingorder", pro: false },
+             { name: "Demands", path: "/superadmin/C&F/demands", pro: false },
         ],
     },
     {

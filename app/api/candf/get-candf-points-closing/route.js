@@ -32,16 +32,46 @@ export async function GET(request) {
 
         const totalRecords = await CandFClosingHistoryModel.countDocuments(query);
         
-        // Saare fields select karo jo report mein chahiye
+        // Saare fields select karo jo report mein chahiye, sath mein naye fields bhi
         const data = await CandFClosingHistoryModel.find(query)
-            .select("dsid name acnumber ifscCode bankName lastmatchpoint usepoint payamount date status statusapprovedate utr")
+            .select("dsid name acnumber ifscCode bankName lastmatchpoint usepoint payamount date status statusapprovedate utr payoutApplicablePoint carryForwardPoint")
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .lean(); // 👈 .lean() use kiya taaki plain JS object mile jisme calculation add kar sakein
+
+        // 🧮 CALCULATION LOGIC: Har record par loop chalake points nikal rahe hain
+        const processedData = data.map(item => {
+            // Strings ko numbers mein convert karo calculation ke liye
+            const usePointNum = parseInt(item.usepoint) || 0;
+            const lastMatchPointNum = parseInt(item.lastmatchpoint) || 0;
+            
+            // 1. Difference nikalo (e.g., 1154 - 954 = 200)
+            const difference = usePointNum - lastMatchPointNum;
+            
+            // 2. Payout Applicable (Sirf 100 ke multiples, e.g., 220 / 100 = 2.2 => floor(2) * 100 = 200)
+            const applicablePoint = Math.floor(difference / 100) * 100;
+            
+            // 3. Carry Forward (Jo 100 se divide nahi hua bacha hua hissa, e.g., 220 % 100 = 20)
+            const carryForward = difference % 100;
+
+            return {
+                ...item,
+                // Agar DB mein pehle se save hai toh wo dikhao, warna abhi ka calculate kiya hua dikhao
+                payoutApplicablePoint: item.payoutApplicablePoint && item.payoutApplicablePoint !== "0" 
+                                       ? item.payoutApplicablePoint 
+                                       : applicablePoint.toString(),
+                carryForwardPoint: item.carryForwardPoint && item.carryForwardPoint !== "0" 
+                                   ? item.carryForwardPoint 
+                                   : carryForward.toString(),
+                // Frontend check karne ke liye total difference bhi bhej rahe hain
+                totalDifference: difference.toString() 
+            };
+        });
 
         return NextResponse.json({ 
             success: true, 
-            data, 
+            data: processedData, 
             currentPage: page, 
             totalPages: Math.ceil(totalRecords / limit) || 1 
         });
