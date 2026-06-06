@@ -25,12 +25,13 @@ export async function GET(request) {
       
 
         const data = await OrderModel.find({
-            $or: query
+            $or: query,
+             deleted: false
         }).sort({ createdAt: -1 });
 
         if (!data || data.length === 0) {
             return Response.json({
-                message: "Is bande ka koi order nahi mila!",
+                message: "No Order Fond",
                 success: false,
                 data: []
             }, { status: 200 });

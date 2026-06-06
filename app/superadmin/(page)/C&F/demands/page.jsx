@@ -126,7 +126,7 @@ export default function SuperadminDashboard() {
                                 ) : (
                                     <tr>
                                         <td colSpan="7" className="p-10 text-center text-gray-500 font-bold italic text-lg">
-                                            Abhi koi bhi demand nahi aayi hai bhai!
+                                            Not Demand Yet! <br /> No demands have been made by any C&F yet.
                                         </td>
                                     </tr>
                                 )}

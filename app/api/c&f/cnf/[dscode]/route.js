@@ -27,7 +27,8 @@ export async function GET(request, { params }) {
 
       const orderQuery = {
         orderat: "C&F",
-        cfId: cfIdString 
+        cfId: cfIdString ,
+         deleted: false
       };
 
       // Stats fetch karo
