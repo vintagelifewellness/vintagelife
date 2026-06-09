@@ -3,7 +3,7 @@ import PaymentHistoryModel from "@/model/PaymentHistory";
 import OrderModel from "@/model/Order";
 import UserModel from "@/model/User";
 import moment from "moment";
-
+import ClosingHistoryModel from "@/model/ClosingHistory";
 export async function GET(request, { params }) {
     await dbConnect();
 
@@ -20,21 +20,19 @@ export async function GET(request, { params }) {
         }
         const activationDate = user.activedate;
 
-        // 2. Define "current week" based on Thursday 5 PM
-        const now = moment();
+        const latestClosing = await ClosingHistoryModel
+            .findOne()
+            .sort({ createdAt: -1 });
 
-        // This week's Thursday 5 PM
-        let thisThursday = moment().isoWeekday(3).hour(22).minute(0).second(0).millisecond(0); // Thursday = 4 in isoWeekday
-
-        // If today is before Thursday 5 PM, then current week started **last Thursday**
-        let weekStart;
-        if (now.isBefore(thisThursday)) {
-            weekStart = thisThursday.clone().subtract(1, "weeks"); // last Thursday 5 PM
-        } else {
-            weekStart = thisThursday.clone(); // this week's Thursday 5 PM
+        if (!latestClosing) {
+            return Response.json({
+                success: false,
+                message: "No closing history found",
+            });
         }
 
-        const weekEnd = weekStart.clone().add(1, "weeks"); // next Thursday 5 PM
+        const weekStart = moment(latestClosing.createdAt);
+        const weekEnd = weekStart.clone().add(1, "weeks");
 
         // 3. Fetch payment history within this week only
         const payments = await PaymentHistoryModel.find({
