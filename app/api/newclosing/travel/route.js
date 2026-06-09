@@ -47,10 +47,11 @@ export async function POST(req) {
 
       if (newMatchingSP <= 0) continue;
 
-      const originalAmount = newMatchingSP * 10; 
-      const finalAmount = originalAmount * 0.95; 
-      const charges = 0; 
-      const payamount = finalAmount * 0.15;
+
+      const amount = newMatchingSP * 10;
+      const payamountBeforeCharge = amount * 0.10; // 10%
+      const charges = payamountBeforeCharge * 0.05; // 5% of payamount
+      const payamount = payamountBeforeCharge - charges; // final payable amount
 
       // Prepare payload for insertMany
       closingEntries.push({
@@ -59,7 +60,7 @@ export async function POST(req) {
         acnumber: user.acnumber || "N/A",
         ifscCode: user.ifscCode || "N/A",
         bankName: user.bankName || "N/A",
-        amount: finalAmount.toFixed(2),
+        amount: amount.toFixed(2),
         charges: charges.toFixed(2),
         payamount: payamount.toFixed(2),
         date: formattedDate,
