@@ -14,6 +14,8 @@ export async function middleware(req) {
       url.pathname = "/admin";
     } else if (token.usertype === "0") {
       url.pathname = "/user";
+    }else if (token.Cnftype === "3") {
+      url.pathname = "/cnfpanel";
     } else {
       url.pathname = "/";
     }
@@ -21,7 +23,7 @@ export async function middleware(req) {
   }
 
   // If no token, redirect all protected routes to /signin
-  if (!token && ["/superadmin", "/admin", "/user"].some(path => url.pathname.startsWith(path))) {
+  if (!token && ["/superadmin", "/admin", "/user" , "/cnfpanel"].some(path => url.pathname.startsWith(path))) {
     console.log("No token found, redirecting to /signin");
     url.pathname = "/";
     return NextResponse.redirect(url);
@@ -41,6 +43,10 @@ export async function middleware(req) {
       return NextResponse.redirect(url);
     }
 
+    if (url.pathname.startsWith("/cnfpanel") && token.Cnftype !== "3") {
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
     if (url.pathname.startsWith("/user") && usertype !== "0") {
       url.pathname = "/";
       return NextResponse.redirect(url);
@@ -51,5 +57,5 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/signin", "/superadmin/:path*", "/admin/:path*", "/user/:path*"],
+  matcher: ["/signin", "/superadmin/:path*", "/admin/:path*", "/user/:path*", "/cnfpanel/:path*"],
 };
