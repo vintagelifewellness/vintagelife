@@ -113,6 +113,7 @@ export default function Signin() {
         </span>
       </Link>
       <div className="w-full max-w-4xl flex flex-col md:flex-row bg-white shadow-2xl rounded-2xl overflow-hidden bordernormal">
+          <h1 className="  px-2 rounded-br bgn text-white absolute  border-b border-r  w-fit">Customer Portal</h1>
         {/* Left Side: Form */}
         <div className="w-full relative md:w-1/2 p-8 md:p-12 order-2 md:order-1 flex flex-col justify-center">
           <h2 className="text-center text-4xl font-bold textn mb-6">
@@ -162,9 +163,7 @@ export default function Signin() {
               </Link>
             </p>
           </form>
-          <div className=" absolute left-0 bottom-0">
-            <p className=" text-xs bgn px-2 py-1 font-semibold rounded-tr-2xl text-white">Please contact Vintage support for password-related issues.</p>
-          </div>
+          
         </div>
 
         {/* Right Side: Image and Welcome Message */}
