@@ -14,6 +14,7 @@ export default function Page() {
     const [cart, setCart] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [cnfList, setCnfList] = useState([]);
     const [formError, setFormError] = useState("");
     const [sameAsBilling, setSameAsBilling] = useState(false);
     const { data: session } = useSession();
@@ -37,9 +38,24 @@ export default function Page() {
         netamount: "",
         remarks: "",
         totalsp: "",
-        outofraj: ""
+        outofraj: "", ordertype: "Order",
+        orderat: "Main Branch",
+        cfName: "", // C&F member ka naam
+        cfId: ""    // C&F member ki ID
 
     });
+
+    useEffect(() => {
+        const fetchCnf = async () => {
+            try {
+                const res = await axios.get("/api/c&f/fetchallactive/user");
+                setCnfList(res.data.data || []); // API se data store kar liya
+            } catch (err) {
+                console.error("C&F fetch error", err);
+            }
+        };
+        fetchCnf();
+    }, []);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -71,7 +87,7 @@ export default function Page() {
                 mobileno: userdata?.mobileNo || "",
                 dsname: userdata?.name || "",
                 address: userdata?.address?.addressLine1 || "",
-                remarks:userdata?.address.state ||""
+                remarks: userdata?.address.state || ""
 
             }));
         }
@@ -112,11 +128,33 @@ export default function Page() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value,
-        }));
+
+        if (name === "orderat") {
+            setFormData(prev => ({
+                ...prev,
+                orderat: value,
+                cfName: value === "Main Branch" ? "" : prev.cfName,
+                cfId: value === "Main Branch" ? "" : prev.cfId
+            }));
+        }
+        else if (name === "cfName") {
+            const selectedMember = cnfList.find(
+                c => (c.cfName || c.name) === value
+            );
+            setFormData(prev => ({
+                ...prev,
+                cfName: value,
+                cfId: selectedMember ? selectedMember._id : "" // Agar API me id ka naam kuch aur hai toh _id ki jagah wo likhna
+            }));
+        }
+        else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
     };
+
 
 
     const handleCheckboxChange = () => {
@@ -150,7 +188,7 @@ export default function Page() {
         const requiredFields = [
             "date", "dscode", "dsname", "address", "mobileno",
             "shippingAddress", "shippingmobile", "shippinpPincode",
-            "paymentmod", "salegroup", "netamount", "totalsp", "outofraj","remarks"
+            "paymentmod", "salegroup", "netamount", "totalsp", "outofraj", "remarks"
         ];
 
         for (let field of requiredFields) {
@@ -159,6 +197,11 @@ export default function Page() {
                 setSubmitting(false);
                 return;
             }
+        }
+        if (formData.orderat === "C&F" && !formData.cfName) {
+            setFormError("Please select C&F Member");
+            setSubmitting(false);
+            return;
         }
         if (userdata?.defaultdata?.toLowerCase() !== "user") {
             toast.error(`Your account is ${userdata.defaultdata.toUpperCase()}, logging out...`);
@@ -251,8 +294,38 @@ export default function Page() {
                             <InputField label="Total RP" name="totalsp" defaultValue={formData.totalsp} disabled />
                             <InputField label="Shipping Charge" name="shippingcharge" defaultValue={formData.shippingcharge} disabled />
                             <SelectField label="Out Of Rajasthan" name="outofraj" options={["YES", "NO"]} value={formData.outofraj} onChange={handleChange} required />
-                            <InputField label="Shipping State" name="remarks"   defaultValue={formData.remarks} onChange={handleChange} disabled required />
+                            <InputField label="Shipping State" name="remarks" defaultValue={formData.remarks} onChange={handleChange} disabled required />
+                            <SelectField
+                                label="Order At"
+                                name="orderat"
+                                options={["Main Branch", "C&F"]}
+                                value={formData.orderat}
+                                onChange={handleChange}
+                                required
+                            />
 
+                            {formData.orderat === "C&F" && (
+                                <SelectField
+                                    label="Select C&F Member"
+                                    name="cfName"
+                                    options={cnfList.map(c => c.cfName || c.name)}
+                                    value={formData.cfName}
+                                    onChange={handleChange}
+                                />
+                            )}
+                            {
+                                Number(userdata?.activesp) === 50 &&
+                                Number(formData?.netamount) >= 10000 && (
+                                    <SelectField
+                                        label="Order Type"
+                                        name="ordertype"
+                                        options={["Order", "Upgrade"]}
+                                        value={formData.ordertype}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                )
+                            }
                         </tbody>
                     </table>
 

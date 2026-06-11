@@ -298,7 +298,7 @@ export default function Page() {
                             <SelectField label="Sale Group" name="salegroup" options={["SAO", "SGO"]} value={formData.salegroup} onChange={handleChange} required />
                             <SelectField label="Out Of Rajasthan" name="outofraj" options={["YES", "NO"]} value={formData.outofraj} onChange={handleChange} required />
 
-                            <InputField label="State Name" name="remarks" defaultValue={formData.remarks} onChange={handleChange} disabled required />
+                            <InputField label="Shipping State" name="remarks" defaultValue={formData.remarks} onChange={handleChange} disabled required />
 
                             <SelectField
                                 label="Order At"
