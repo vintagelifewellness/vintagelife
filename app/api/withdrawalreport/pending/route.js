@@ -6,8 +6,8 @@ export const GET = async (request) => {
 
   const { searchParams } = new URL(request.url);
 
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
+  const limit = Math.max(parseInt(searchParams.get("limit") || "20"), 1);
 
   const dscode = searchParams.get("dscode");
   const date = searchParams.get("date");
@@ -31,8 +31,9 @@ export const GET = async (request) => {
     // DATE FILTER
     if (date) {
       const dateStart = new Date(date);
+      dateStart.setHours(0, 0, 0, 0);
 
-      const dateEnd = new Date(date);
+      const dateEnd = new Date(dateStart);
       dateEnd.setDate(dateEnd.getDate() + 1);
 
       filter.createdAt = {
@@ -42,32 +43,82 @@ export const GET = async (request) => {
     }
 
     // ======================================================
+    // HELPER: KYC LOOKUP PIPELINE
+    // ClosingHistory.dsid === Kyc.dscode
+    // ======================================================
+
+    const kycLookupPipeline = [
+      {
+        $lookup: {
+          from: "kyc2",
+          localField: "dsid",
+          foreignField: "dscode",
+          as: "kycData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$kycData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          pankkyc: {
+            $ifNull: ["$kycData.pankkyc", false],
+          },
+          panresn: {
+            $ifNull: ["$kycData.panresn", null],
+          },
+        },
+      },
+      {
+        $project: {
+          kycData: 0,
+        },
+      },
+    ];
+
+    // ======================================================
     // WHEN MIN AMOUNT EXISTS
     // ======================================================
 
     if (minAmount) {
       const min = Number(minAmount);
 
+      if (Number.isNaN(min)) {
+        return Response.json(
+          {
+            success: false,
+            message: "Invalid minAmount",
+          },
+          { status: 400 }
+        );
+      }
+
       // STEP 1:
-      // FIND USERS WHOSE TOTAL >= MIN AMOUNT
+      // FIND USERS WHOSE TOTAL PAY AMOUNT >= MIN AMOUNT
 
       const groupedUsers = await ClosingHistoryModel.aggregate([
         {
           $match: filter,
         },
-
         {
           $group: {
             _id: "$dsid",
 
             totalPayAmount: {
               $sum: {
-                $toDouble: "$payamount",
+                $convert: {
+                  input: "$payamount",
+                  to: "double",
+                  onError: 0,
+                  onNull: 0,
+                },
               },
             },
           },
         },
-
         {
           $match: {
             totalPayAmount: {
@@ -97,7 +148,7 @@ export const GET = async (request) => {
 
       // STEP 2:
       // FETCH ALL ENTRIES OF THOSE USERS
-      // SAME USER DATA TOGETHER
+      // AND ADD PAN KYC DETAILS
 
       const finalFilter = {
         ...filter,
@@ -106,16 +157,30 @@ export const GET = async (request) => {
         },
       };
 
-      const data = await ClosingHistoryModel.find(finalFilter)
-        .sort({
-          dsid: 1, // same user together
-          createdAt: -1, // latest first inside same user
-        })
-        .skip((page - 1) * limit)
-        .limit(limit);
+      const data = await ClosingHistoryModel.aggregate([
+        {
+          $match: finalFilter,
+        },
 
-      const total =
-        await ClosingHistoryModel.countDocuments(finalFilter);
+        ...kycLookupPipeline,
+
+        {
+          $sort: {
+            dsid: 1,
+            createdAt: -1,
+          },
+        },
+
+        {
+          $skip: (page - 1) * limit,
+        },
+
+        {
+          $limit: limit,
+        },
+      ]);
+
+      const total = await ClosingHistoryModel.countDocuments(finalFilter);
 
       return Response.json(
         {
@@ -132,17 +197,32 @@ export const GET = async (request) => {
 
     // ======================================================
     // NORMAL QUERY (WITHOUT MIN AMOUNT)
+    // ALSO ADD PAN KYC DETAILS
     // ======================================================
 
-    const data = await ClosingHistoryModel.find(filter)
-      .sort({
-        createdAt: -1,
-      })
-      .skip((page - 1) * limit)
-      .limit(limit);
+    const data = await ClosingHistoryModel.aggregate([
+      {
+        $match: filter,
+      },
 
-    const total =
-      await ClosingHistoryModel.countDocuments(filter);
+      ...kycLookupPipeline,
+
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+
+      {
+        $skip: (page - 1) * limit,
+      },
+
+      {
+        $limit: limit,
+      },
+    ]);
+
+    const total = await ClosingHistoryModel.countDocuments(filter);
 
     return Response.json(
       {
@@ -162,6 +242,7 @@ export const GET = async (request) => {
       {
         success: false,
         message: "Failed to fetch data",
+        error: error.message,
       },
       { status: 500 }
     );

@@ -362,7 +362,17 @@ export default function Page() {
                     />
                   </td>
 
-                  <td className="border p-3">{item.dsid}</td>
+              <td className="border p-3">
+  <div>{item.dsid}</div>
+
+  <span
+    className={`text-xs font-semibold ${
+      item.pankkyc ? "text-green-600" : "text-red-600"
+    }`}
+  >
+    {item.pankkyc ? "PAN Verified" : "PAN Not Verified"}
+  </span>
+</td>
                   <td className="border p-3">{item.name}</td>
                   <td className="border p-3">
                     {item.acnumber || '-'}
