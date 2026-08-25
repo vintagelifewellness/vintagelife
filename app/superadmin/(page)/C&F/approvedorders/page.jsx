@@ -130,7 +130,7 @@ export default function PendingOrders() {
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Mobile Number</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Amount</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Payment Mode</th>
-                                <th className="border border-gray-300 px-2 md:px-4 py-2">Sp</th>
+                                <th className="border border-gray-300 px-2 md:px-4 py-2">Rp</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Date</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Action</th>
                             </tr>

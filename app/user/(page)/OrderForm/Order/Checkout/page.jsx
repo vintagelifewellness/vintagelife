@@ -86,7 +86,16 @@ export default function Page() {
                 ...prev,
                 mobileno: userdata?.mobileNo || "",
                 dsname: userdata?.name || "",
-                address: userdata?.address?.addressLine1 || "",
+                address: [
+                    userdata?.address?.addressLine1,
+                    userdata?.address?.addressLine2,
+                    userdata?.address?.landmark,
+                    userdata?.address?.city,
+                    userdata?.address?.state,
+                    userdata?.address?.pinCode,
+                ]
+                    .filter(Boolean)
+                    .join(", "),
                 remarks: userdata?.address.state || ""
 
             }));

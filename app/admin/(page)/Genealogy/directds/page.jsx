@@ -79,12 +79,12 @@ export default function Page() {
                                     "DS Name",
                                     "DOJ",
                                     "Sponsor DS Code",
-                                    "Self SP",
-                                    "Total SP",
-                                    "Curr. Total SP",
+                                    "Self RP",
+                                    "Total RP",
+                                    "Curr. Total RP",
                                     "Sale Group",
-                                    "Curr. Self RSP",
-                                    "Curr. Total RSP",
+                                    "Curr. Self RRP",
+                                    "Curr. Total RRP",
                                     "Status",
                                 ].map((header, index) => (
                                     <th key={index} className="px-3 border border-gray-300 text-center">

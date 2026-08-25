@@ -131,50 +131,52 @@ export default function PendingOrders() {
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Mobile Number</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Amount</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Payment Mode</th>
-                                <th className="border border-gray-300 px-2 md:px-4 py-2">Sp</th>
+                                <th className="border border-gray-300 px-2 md:px-4 py-2">Rp</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Date</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Order At</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Action</th>
                             </tr>
                         </thead>
-                       <tbody>
-    {filteredOrders.length > 0 ? (
-        filteredOrders.map((order) => (
-            <tr key={order._id} className="text-center bg-white dark:bg-gray-800 text-sm md:text-base">
-                <td className="border border-gray-300 px-2 md:px-4 py-2">{order.orderNo}</td>
-                <td className="border border-gray-300 px-2 md:px-4 py-2">{order.dscode}</td>
-                <td className="border border-gray-300 px-2 text-left md:px-4 py-2">{order.dsname}</td>
-                <td className="border border-gray-300 px-2 md:px-4 py-2">{order.mobileno}</td>
-                <td className="border border-gray-300 px-2 md:px-4 py-2">{order.netamount}</td>
-                <td className="border border-gray-300 px-2 md:px-4 py-2">{order.paymentmod}</td>
-                <td className="border border-gray-300 px-2 md:px-4 py-2">{order.totalsp}</td>
-                <td className="border border-gray-300 px-2 md:px-4 py-2">
-                    {new Date(order.date).toLocaleDateString("en-GB")}
-                </td>
+                        <tbody>
+                            {filteredOrders.length > 0 ? (
+                                filteredOrders.map((order) => (
+                                    <tr key={order._id} className="text-center bg-white dark:bg-gray-800 text-sm md:text-base">
+                                        <td className="border border-gray-300 px-2 md:px-4 py-2">{order.orderNo}</td>
+                                        <td className="border border-gray-300 px-2 md:px-4 py-2">{order.dscode}</td>
+                                        <td className="border border-gray-300 px-2 text-left md:px-4 py-2">{order.dsname}</td>
+                                        <td className="border border-gray-300 px-2 md:px-4 py-2">{order.mobileno}</td>
+                                        <td className="border border-gray-300 px-2 md:px-4 py-2">{order.netamount}</td>
+                                        <td className="border border-gray-300 px-2 md:px-4 py-2">{order.paymentmod}</td>
+                                        <td className="border border-gray-300 px-2 md:px-4 py-2">{order.totalsp}</td>
+                                        <td className="border border-gray-300 px-2 md:px-4 py-2">
+                                            {new Date(order.date).toLocaleDateString("en-GB")}
+                                        </td>
 
-                {/* Remark Column */}
-                <td className="border border-gray-300 px-2 md:px-4 py-2">
-                    {order.orderat === "C&F" ? "C&F" : "Main"}
-                </td>
+                                        {/* Remark Column */}
+                                   <td className="border border-gray-300 px-2 md:px-4 py-2">
+    {order.orderat === "C&F"
+        ? `C&F (${order.cfName || "N/A"})`
+        : "Main"}
+</td>
 
-                <td className="border border-gray-300 px-2 md:px-4 py-2">
-                    <button
-                        onClick={() => openModal(order)}
-                        className="text-blue-500 hover:text-blue-700"
-                    >
-                        View
-                    </button>
-                </td>
-            </tr>
-        ))
-    ) : (
-        <tr>
-            <td colSpan="10" className="text-center p-4 text-gray-500">
-                No orders found
-            </td>
-        </tr>
-    )}
-</tbody>
+                                        <td className="border border-gray-300 px-2 md:px-4 py-2">
+                                            <button
+                                                onClick={() => openModal(order)}
+                                                className="text-blue-500 hover:text-blue-700"
+                                            >
+                                                View
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="10" className="text-center p-4 text-gray-500">
+                                        No orders found
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
                     </table>
                 </div>
             )}

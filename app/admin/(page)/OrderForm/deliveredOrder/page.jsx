@@ -109,7 +109,7 @@ export default function DeliveredOrder() {
               <th className="border border-gray-300 px-4 py-2">Payment Mode</th>
               <th className="border border-gray-300 px-4 py-2">Sale Group</th>
               <th className="border border-gray-300 px-4 py-2">Total Amount</th>
-              <th className="border border-gray-300 px-4 py-2">Total Sp</th>
+              <th className="border border-gray-300 px-4 py-2">Total Rp</th>
               <th className="border border-gray-300 px-4 py-2">Delivery Date</th>
               <th className="border border-gray-300 px-4 py-2">Status</th>
               <th className="border border-gray-300 px-4 py-2">Action</th>

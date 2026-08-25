@@ -156,7 +156,7 @@ export default function Dashboard() {
         Icon: Target,
       },
       {
-        title: "SGO SP",
+        title: "SGO RP",
         count: panelData.mainUser?.sgosp || 0,
         color: "#f28430",
         Icon: Target,

@@ -136,6 +136,11 @@ export default function RequestToSuperadminPage() {
         }
     };
 
+    // Print handle karne ka function
+    const handlePrint = () => {
+        window.print();
+    };
+
     if (status === "loading") {
         return <div className="min-h-screen flex items-center justify-center font-bold">Loading Data...</div>;
     }
@@ -144,23 +149,29 @@ export default function RequestToSuperadminPage() {
     const grandTotalPrice = requestedItemsList.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const grandTotalRP = requestedItemsList.reduce((acc, item) => acc + (item.rp * item.quantity), 0);
 
-    // Selected product ki detail dikhane ke liye
-    const activeProduct = dbProducts.find((p) => p._id === selectedProduct);
-
     return (
-        <div className="max-w-6xl mx-auto lg:p-6 p-4 mt-8 bg-white dark:bg-gray-800 shadow-xl rounded-xl text-gray-700 dark:text-gray-100 relative">
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center border-b pb-4">
+        <div className="max-w-6xl mx-auto lg:p-6 p-4 mt-8 bg-white dark:bg-gray-800 shadow-xl rounded-xl text-gray-700 dark:text-gray-100 relative print:shadow-none print:mt-0 print:p-0">
+            
+            {/* PRINT ONLY HEADER - Ye sirf print paper me dikhega */}
+            <div className="hidden print:block text-center mb-6 border-b pb-4">
+                <h1 className="text-3xl font-bold text-black">Product Demand Report</h1>
+                <p className="text-lg text-gray-700 mt-2">C&F Name: {session?.user?.name || "N/A"} | DsCode: {session?.user?.dscode || "N/A"}</p>
+                <p className="text-md text-gray-500 mt-1">Date: {new Date().toLocaleDateString()}</p>
+            </div>
+
+            {/* SCREEN ONLY HEADER - Print me hide ho jayega */}
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center border-b pb-4 print:hidden">
                 Send Stock Demand to Superadmin
             </h2>
 
             {message.text && (
-                <div className={`p-4 mb-6 rounded-lg text-center font-bold ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                <div className={`p-4 mb-6 rounded-lg text-center font-bold print:hidden ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {message.text}
                 </div>
             )}
 
-            {/* Dynamic C&F Details from Session */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 bg-gray-50 p-5 rounded-lg border">
+            {/* Dynamic C&F Details - Print me hide ho jayega */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 bg-gray-50 p-5 rounded-lg border print:hidden">
                 <div>
                     <label className="block text-sm font-semibold mb-2">C&F DsCode</label>
                     <input type="text" value={session?.user?.dscode || ""} disabled className="border rounded-lg p-2.5 w-full bg-gray-200 cursor-not-allowed font-medium text-gray-800" />
@@ -171,17 +182,17 @@ export default function RequestToSuperadminPage() {
                 </div>
             </div>
 
+            <div className="mb-6 border p-5 rounded-lg bg-gray-50 print:border-none print:p-0 print:bg-white print:m-0">
+                <h3 className="text-lg font-bold mb-4 print:hidden">Select & Add Products</h3>
 
-            <div className="mb-6 border p-5 rounded-lg bg-gray-50">
-                <h3 className="text-lg font-bold mb-4">Select & Add Products</h3>
-
-                <div className="flex flex-col md:flex-row gap-4 ">
-                    <div className=" ">
+                {/* Form Controls - Print me hide ho jayega */}
+                <div className="flex flex-col md:flex-row gap-4 print:hidden">
+                    <div>
                         <label className="block text-sm font-semibold mb-2">Select Product</label>
                         <select
                             value={selectedProduct}
                             onChange={(e) => setSelectedProduct(e.target.value)}
-                            className="border rounded-lg p-3   outline-none text-gray-800"
+                            className="border rounded-lg p-3 outline-none text-gray-800 w-full"
                         >
                             <option value="">-- Select a Product --</option>
                             {loadingProducts ? (
@@ -194,10 +205,9 @@ export default function RequestToSuperadminPage() {
                                 ))
                             )}
                         </select>
-                         
                     </div>
 
-                    <div className=" ">
+                    <div>
                         <label className="block text-sm font-semibold mb-2">Quantity</label>
                         <input
                             type="number"
@@ -209,58 +219,67 @@ export default function RequestToSuperadminPage() {
                         />
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={handleAddItem}
-                        className="bg-blue-600   hover:bg-blue-700 text-white font-bold py-1 px-2 rounded-lg shadow-md"
-                    >
-                        Add to List
-                    </button>
+                    <div className="flex items-end">
+                        <button
+                            type="button"
+                            onClick={handleAddItem}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md w-full md:w-auto"
+                        >
+                            Add to List
+                        </button>
+                    </div>
                 </div>
 
+                {/* TABLE SECTION - Ye print hoga */}
                 {requestedItemsList.length > 0 && (
-                    <div className="mt-6 overflow-x-auto">
-                        <table className="w-full border-collapse border rounded-lg">
+                    <div className="mt-6 overflow-x-auto print:mt-2">
+                        <table className="w-full border-collapse border rounded-lg print:border-black">
                             <thead>
-                                <tr className="bg-gray-200 text-left text-gray-800">
-                                    <th className="p-3 border">Product Name</th>
-                                    <th className="p-3 border text-center">Price</th>
-                                    <th className="p-3 border text-center">RP</th>
-                                    <th className="p-3 border text-center">Quantity</th>
-                                    <th className="p-3 border text-center text-blue-700">Total Price</th>
-                                    <th className="p-3 border text-center text-green-700">Total RP</th>
-                                    <th className="p-3 border text-center">Action</th>
+                                <tr className="bg-gray-200 text-left text-gray-800 print:bg-gray-200">
+                                    <th className="p-3 border print:border-black">Product Name</th>
+                                    <th className="p-3 border text-center print:border-black">Price</th>
+                                    <th className="p-3 border text-center print:border-black">RP</th>
+                                    <th className="p-3 border text-center print:border-black">Quantity</th>
+                                    <th className="p-3 border text-center text-blue-700 print:border-black print:text-black">Total Price</th>
+                                    <th className="p-3 border text-center text-green-700 print:border-black print:text-black">Total RP</th>
+                                    {/* Action Column print me hide */}
+                                    <th className="p-3 border text-center print:hidden">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {requestedItemsList.map((item, index) => {
-                                    // ⚡ Ye calculation ekdam LIVE hai
                                     const totalItemPrice = item.price * item.quantity;
                                     const totalItemRP = item.rp * item.quantity;
 
                                     return (
                                         <tr key={index} className="bg-white text-gray-800">
-                                            <td className="p-3 border font-medium">{item.productName}</td>
-                                            <td className="p-3 border text-center">₹{item.price}</td>
-                                            <td className="p-3 border text-center">{item.rp}</td>
+                                            <td className="p-3 border font-medium print:border-black">{item.productName}</td>
+                                            <td className="p-3 border text-center print:border-black">₹{item.price}</td>
+                                            <td className="p-3 border text-center print:border-black">{item.rp}</td>
 
-                                            <td className="p-3 border text-center">
+                                            <td className="p-3 border text-center print:border-black">
                                                 <div className="flex items-center justify-center gap-2">
+                                                    {/* Minus button print me hide */}
                                                     <button
                                                         onClick={() => handleQuantityChange(index, item.quantity - 1)}
-                                                        className="bg-red-500 text-white w-8 h-8 rounded font-bold"
+                                                        className="bg-red-500 text-white w-8 h-8 rounded font-bold print:hidden"
                                                     >-</button>
-                                                    <span className="w-10 text-center font-bold">{item.quantity}</span>
+                                                    
+                                                    <span className="w-10 text-center font-bold print:w-auto">{item.quantity}</span>
+                                                    
+                                                    {/* Plus button print me hide */}
                                                     <button
                                                         onClick={() => handleQuantityChange(index, item.quantity + 1)}
-                                                        className="bg-green-500 text-white w-8 h-8 rounded font-bold"
+                                                        className="bg-green-500 text-white w-8 h-8 rounded font-bold print:hidden"
                                                     >+</button>
                                                 </div>
                                             </td>
 
-                                            <td className="p-3 border text-center font-bold text-blue-600">₹{totalItemPrice}</td>
-                                            <td className="p-3 border text-center font-bold text-green-600">{totalItemRP}</td>
-                                            <td className="p-3 border text-center">
+                                            <td className="p-3 border text-center font-bold text-blue-600 print:border-black print:text-black">₹{totalItemPrice}</td>
+                                            <td className="p-3 border text-center font-bold text-green-600 print:border-black print:text-black">{totalItemRP}</td>
+                                            
+                                            {/* Remove button print me hide */}
+                                            <td className="p-3 border text-center print:hidden">
                                                 <button
                                                     onClick={() => handleRemoveItem(index)}
                                                     className="text-red-500 hover:underline font-semibold"
@@ -272,13 +291,14 @@ export default function RequestToSuperadminPage() {
                             </tbody>
                         </table>
 
-                        <div className="flex justify-end mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        {/* TOTALS SECTION - Ye bhi print hoga */}
+                        <div className="flex justify-end mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg print:border-black print:bg-white">
                             <div className="text-right">
                                 <h4 className="text-xl font-bold text-gray-800">
-                                    Grand Total Price: <span className="text-blue-600">₹{grandTotalPrice}</span>
+                                    Grand Total Price: <span className="text-blue-600 print:text-black">₹{grandTotalPrice}</span>
                                 </h4>
                                 <h4 className="text-xl font-bold text-gray-800 mt-2">
-                                    Grand Total RP: <span className="text-green-600">{grandTotalRP}</span>
+                                    Grand Total RP: <span className="text-green-600 print:text-black">{grandTotalRP}</span>
                                 </h4>
                             </div>
                         </div>
@@ -286,17 +306,29 @@ export default function RequestToSuperadminPage() {
                 )}
             </div>
 
-            <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className={`w-full text-white px-4 py-3.5 rounded-lg text-lg font-bold shadow-md ${loading ? 'bg-green-400' : 'bg-green-600 hover:bg-green-700'}`}
-            >
-                {loading ? "Processing..." : "Submit Final Demand"}
-            </button>
+            {/* BUTTONS ROW - Print me hide */}
+            <div className="flex flex-col sm:flex-row gap-4 print:hidden">
+                <button
+                    onClick={handleSubmit}
+                    disabled={loading || requestedItemsList.length === 0}
+                    className={`flex-1 text-white px-4 py-3.5 rounded-lg text-lg font-bold shadow-md ${loading || requestedItemsList.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+                >
+                    {loading ? "Processing..." : "Submit Final Demand"}
+                </button>
 
-            {/* CONFIRMATION MODAL (POPUP) */}
+                {requestedItemsList.length > 0 && (
+                    <button
+                        onClick={handlePrint}
+                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-3.5 rounded-lg text-lg font-bold shadow-md"
+                    >
+                        Print Demand List
+                    </button>
+                )}
+            </div>
+
+            {/* CONFIRMATION MODAL (POPUP) - Print me naturally hide rahega kyunki modal condition base pe hai */}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 print:hidden">
                     <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full mx-4 transform transition-all text-center">
                         <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-4">
                             <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

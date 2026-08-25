@@ -1,25 +1,25 @@
 import dbConnect from "@/lib/dbConnect";
 import PaymentHistoryModel from "@/model/PaymentHistory";
-import OrderModel from "@/model/Order";
 import UserModel from "@/model/User";
-import moment from "moment";
 import ClosingHistoryModel from "@/model/ClosingHistory";
+
 export async function GET(request, { params }) {
     await dbConnect();
 
     try {
         const { dscode } = params;
 
-        // 1. Fetch user to get activation date
+        // 1. Check user
         const user = await UserModel.findOne({ dscode });
+
         if (!user) {
             return Response.json({
                 success: false,
                 message: "User not found",
             });
         }
-        const activationDate = user.activedate;
 
+        // 2. Get latest closing
         const latestClosing = await ClosingHistoryModel
             .findOne()
             .sort({ createdAt: -1 });
@@ -31,52 +31,30 @@ export async function GET(request, { params }) {
             });
         }
 
-        const weekStart = moment(latestClosing.createdAt);
-        const weekEnd = weekStart.clone().add(1, "weeks");
+        const closingDate = latestClosing.createdAt;
 
-        // 3. Fetch payment history within this week only
+        // 3. Latest closing ke BAAD ki saari payments
         const payments = await PaymentHistoryModel.find({
             dsid: dscode,
             type: "order",
-            createdAt: { $gte: weekStart.toDate(), $lt: weekEnd.toDate() },
+            createdAt: { $gt: closingDate },
         });
 
-        if (!payments || payments.length === 0) {
-            return Response.json({
-                success: false,
-                message: "No payment history found for this week",
-            });
-        }
-
-        // 4. Calculate SAO RP and SGO RP
+        // 4. Calculate RP
         let saoRP = 0;
         let sgoRP = 0;
 
         payments.forEach((p) => {
             if (p.group === "SAO") {
                 saoRP += Number(p.sp) || 0;
-            } else if (p.group === "SGO") {
+            }
+
+            if (p.group === "SGO") {
                 sgoRP += Number(p.sp) || 0;
             }
         });
 
-        // 5. Subtract SP for orders before activation & status true
-        const preActivationOrders = await OrderModel.find({
-            dscode,
-            status: true,
-            date: { $lt: activationDate },
-        });
-
-        preActivationOrders.forEach((order) => {
-            const spToSubtract = Number(order.totalsp) || 0;
-            if (order.salegroup === "SAO") {
-                saoRP -= spToSubtract;
-            } else if (order.salegroup === "SGO") {
-                sgoRP -= spToSubtract;
-            }
-        });
-
-        // Prevent negative RP
+        // 5. Prevent negative RP
         saoRP = Math.max(0, saoRP);
         sgoRP = Math.max(0, sgoRP);
 
@@ -86,9 +64,15 @@ export async function GET(request, { params }) {
             totalSAORP: saoRP,
             totalSGORP: sgoRP,
         });
+
     } catch (error) {
+        console.error("Weekly RP API Error:", error);
+
         return Response.json(
-            { success: false, message: error.message },
+            {
+                success: false,
+                message: error.message,
+            },
             { status: 500 }
         );
     }

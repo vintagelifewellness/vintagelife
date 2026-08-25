@@ -132,6 +132,7 @@ export default function PendingOrders() {
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Amount</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Payment Mode</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Rp</th>
+                                <th className="border border-gray-300 px-2 md:px-4 py-2">Order At</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Date</th>
                                 <th className="border border-gray-300 px-2 md:px-4 py-2">Action</th>
                             </tr>
@@ -147,6 +148,11 @@ export default function PendingOrders() {
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">{order.netamount}</td>
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">{order.paymentmod}</td>
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">{order.totalsp}</td>
+                                        <td className="border border-gray-300 px-2 md:px-4 py-2">
+                                            {order.orderat === "C&F"
+                                                ? `C&F (${order.cfName || "N/A"})`
+                                                : "Main"}
+                                        </td>
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">{new Date(order.date).toLocaleDateString("en-GB")}</td>
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">
                                             <button onClick={() => openModal(order)} className="text-blue-500 hover:text-blue-700">View</button>

@@ -113,19 +113,19 @@ export default function Bonanza() {
                                 </div>
                             )}
                             <div className="flex items-center justify-between mb-4 border-b pb-2 border-[#CBBCAF]">
-                                <h2 className="text-xl font-semibold text-[#5A3E36]">{type} SP</h2>
+                                <h2 className="text-xl font-semibold text-[#5A3E36]">{type} RP</h2>
                                 <span className="text-sm text-[#9C7B6A] italic">Progress Overview</span>
                             </div>
 
                             <div className="flex flex-col gap-4">
                                 <div className="flex justify-between bg-[#FFF8F0] rounded-lg px-4 py-3 border border-[#E5D4C1]">
                                     <span className="text-[#6B4C3B] font-medium">Current Achieve</span>
-                                    <span className="text-[#3E7C59] font-semibold">{current} SP</span>
+                                    <span className="text-[#3E7C59] font-semibold">{current} RP</span>
                                 </div>
 
                                 <div className="flex justify-between bg-[#FFF8F0] rounded-lg px-4 py-3 border border-[#E5D4C1]">
                                     <span className="text-[#6B4C3B] font-medium">Target</span>
-                                    <span className="text-[#335C81] font-semibold">{target} SP</span>
+                                    <span className="text-[#335C81] font-semibold">{target} RP</span>
                                 </div>
                             </div>
                         </div>

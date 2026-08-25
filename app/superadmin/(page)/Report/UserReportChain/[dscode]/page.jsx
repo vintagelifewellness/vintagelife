@@ -84,8 +84,8 @@ export default function PendingOrders() {
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Name</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">PD Code</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">DS Code</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Sao Sp</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Sgo Sp</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Sao Rp</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Sgo Rp</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Group</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created Date</th>

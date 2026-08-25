@@ -101,7 +101,7 @@ export default function Page() {
                                     <th className="px-4 py-3">Email</th>
                                     <th className="px-4 py-3">Group</th>
                                     <th className="py-3 px-4">Current Level</th>
-                                    <th className="py-3 px-4">Active Sp</th>
+                                    <th className="py-3 px-4">Active Rp</th>
                                     <th className="py-3 px-4">Kyc Status</th>
                                     <th className="px-4 py-3">Status</th>
                                     <th className="px-4 py-3">Register Date</th>

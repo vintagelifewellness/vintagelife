@@ -122,7 +122,7 @@ export default function Page() {
                   <tr>
                     {[
                       "S.No", "DS Code", "DS Name", "DOJ", "Sponsor DS Code", 
-                      "Self SP", "Total SP", "Status"
+                      "Self RP", "Total RP", "Status"
                     ].map((header) => (
                       <th key={header} scope="col" className="py-3 px-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         {header}

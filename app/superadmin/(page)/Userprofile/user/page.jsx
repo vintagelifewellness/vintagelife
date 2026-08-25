@@ -213,7 +213,7 @@ const UserTable = React.memo(({ users }) => (
                 <th scope="col" className="px-6 py-4">SGO RP</th>
                 <th scope="col" className="px-6 py-4 hidden sm:table-cell">Group</th>
                 <th scope="col" className="px-6 py-4 hidden md:table-cell">Level</th>
-                <th scope="col" className="px-6 py-4 hidden lg:table-cell">Active Sp</th>
+                <th scope="col" className="px-6 py-4 hidden lg:table-cell">Active Rp</th>
                 <th scope="col" className="px-6 py-4 hidden lg:table-cell">Password</th>
                 <th scope="col" className="px-6 py-4">Status</th>
                 <th scope="col" className="px-6 py-4">Dashboard</th>
