@@ -55,8 +55,10 @@ export const authOptions = {
             email: user.email,
             name: user.name || user.cfName || "User",
             dscode: user.dscode,
+            activesp: user.activesp,
             usertype: isCnfUser ? null : user.usertype,
             Cnftype: isCnfUser ? user.Cnftype : null,
+            mobileNo: isCnfUser ? user.mobileNo : null,
           };
 
         } catch (error) {
@@ -82,6 +84,9 @@ export const authOptions = {
         token.dscode = user.dscode;
         if (user.usertype) token.usertype = user.usertype; // Add usertype if exists
         if (user.Cnftype) token.Cnftype = user.Cnftype;    // Add Cnftype if exists
+        if (user.mobileNo) token.mobileNo = user.mobileNo;    // Add Cnftype if exists
+
+        if (user.activesp) token.activesp = user.activesp;    // Add Cnftype if exists
       }
       return token;
     },
@@ -89,7 +94,9 @@ export const authOptions = {
       session.user.id = token.id;
       session.user.dscode = token.dscode;
       if (token.usertype) session.user.usertype = token.usertype;
+      if (token.activesp) session.user.activesp = token.activesp;
       if (token.Cnftype) session.user.Cnftype = token.Cnftype;
+      if (token.mobileNo) session.user.mobileNo = token.mobileNo;
       return session;
     },
   },
