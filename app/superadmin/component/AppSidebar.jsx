@@ -110,6 +110,7 @@ const navItems = [
             { name: "Monthly Closing", path: "/superadmin/closing/monthly", pro: false },
             { name: "Travel Fund Closing", path: "/superadmin/closing/travel", pro: false },
             { name: "Bonanza Closing", path: "/superadmin/closing/bonanza", pro: false },
+            { name: "C&F Closing", path: "/superadmin/closing/C&F-Monthly", pro: false },
         ],
     },
 
