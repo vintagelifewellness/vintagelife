@@ -11,7 +11,7 @@ const CounterModel = mongoose.models.Counter || mongoose.model("Counter", Counte
 
 const UserSchema = new Schema(
   {
-    dscode: { type: String, unique: true },
+    dscode: { type: String, unique: true, index: true},
     pdscode: { type: String, required: true, default: "0" },
     level: { type: String },
     saosp: { type: String },

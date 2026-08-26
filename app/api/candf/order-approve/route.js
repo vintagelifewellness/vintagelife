@@ -3,23 +3,23 @@ import OrderModel from "@/model/Order";
 import mongoose from "mongoose";
 import UserModel from "@/model/User";
 import PaymentHistoryModel from "@/model/PaymentHistory";
-import CnfModel from "@/model/c&fusers"; 
-import PointHistoryModel from "@/model/PointHistory"; 
+import CnfModel from "@/model/c&fusers";
+import PointHistoryModel from "@/model/PointHistory";
 
 export async function PATCH(req) {
     await dbConnect();
 
     try {
         const data = await req.json();
-         
-        const id = data.orderId;  
+
+        const id = data.orderId;
         const requiredPoints = data.requiredPoints || 0;
 
         if (!id) {
-             return Response.json({
-                 message: "Order ID is required",
-                 success: false
-             }, { status: 400 });
+            return Response.json({
+                message: "Order ID is required",
+                success: false
+            }, { status: 400 });
         }
 
         const session = await mongoose.startSession();
@@ -47,22 +47,22 @@ export async function PATCH(req) {
             if (data.status === true && !data.cancelled) {
                 if (updatedOrder.cfId) {
                     const cfUser = await CnfModel.findById(updatedOrder.cfId).session(session);
-                    
+
                     if (!cfUser) {
                         await session.abortTransaction();
                         session.endSession();
-                        return Response.json({ 
-                            success: false, 
-                            message: "C&F User not found!" 
+                        return Response.json({
+                            success: false,
+                            message: "C&F User not found!"
                         }, { status: 404 });
                     }
 
                     if (cfUser.Availablepoint < requiredPoints) {
                         await session.abortTransaction();
                         session.endSession();
-                        return Response.json({ 
-                            success: false, 
-                            message: `Low Balance! Required: ${requiredPoints}, Available: ${cfUser.Availablepoint}` 
+                        return Response.json({
+                            success: false,
+                            message: `Low Balance! Required: ${requiredPoints}, Available: ${cfUser.Availablepoint}`
                         }, { status: 400 });
                     }
 
@@ -71,7 +71,7 @@ export async function PATCH(req) {
                     // 1. Points Update
                     cfUser.Availablepoint -= requiredPoints;
                     cfUser.Usepoint = (cfUser.Usepoint || 0) + requiredPoints;
-                    
+
                     await cfUser.save({ session });
 
                     // 2. History Create
@@ -81,7 +81,7 @@ export async function PATCH(req) {
                     await PointHistoryModel.create([{
                         cfCode: finalCode,
                         cfName: finalName,
-                        addedPoints: -Number(requiredPoints), 
+                        addedPoints: -Number(requiredPoints),
                         oldBalance: Number(oldBalance),
                         newBalance: Number(cfUser.Availablepoint),
                         remarks: `Order Approved: ${updatedOrder.orderNo || id}`,
@@ -93,7 +93,6 @@ export async function PATCH(req) {
             }
             // =========================================================
 
-
             const user = await UserModel.findOne({
                 dscode: updatedOrder.dscode
             }).session(session);
@@ -104,9 +103,12 @@ export async function PATCH(req) {
                 let currentSgosp = parseFloat(user.sgosp) || 0;
                 const orderTotalSp = parseFloat(updatedOrder.totalsp) || 0;
 
+                // ⚡ BATCH ARRAYS FOR DATABASE WRITES
+                const userBulkOps = [];
+                const paymentHistoryDocs = [];
+
                 // ✅ APPROVE ORDER
                 if (data.status === true && !data.cancelled) {
-
                     const isUpgrade = updatedOrder.ordertype === "Upgrade";
 
                     if (!isUpgrade) {
@@ -119,55 +121,36 @@ export async function PATCH(req) {
                             currentSgosp += orderTotalSp;
                         }
 
-                        await UserModel.updateOne(
-                            { dscode: updatedOrder.dscode },
-                            {
-                                earnsp: currentEarnsp.toString(),
-                                saosp: currentSaosp.toString(),
-                                sgosp: currentSgosp.toString()
-                            },
-                            { session }
-                        );
+                        // Add to batch operations
+                        userBulkOps.push({
+                            updateOne: {
+                                filter: { dscode: updatedOrder.dscode },
+                                update: { earnsp: currentEarnsp.toString(), saosp: currentSaosp.toString(), sgosp: currentSgosp.toString() }
+                            }
+                        });
 
-                        await PaymentHistoryModel.create([{
-                            dsid: user.dscode,
-                            dsgroup: user.group,
-                            amount: "0",
-                            sp: orderTotalSp.toString(),
-                            group: updatedOrder.salegroup,
-                            type: "order",
-                            orderno: updatedOrder.orderNo,
-                            referencename: user.dscode,
-                            pairstatus: false,
-                            monthlystatus: false,
-                            defaultdata: "PaymentHistory",
-                            levelname: "L0"
-                        }], { session });
+                        paymentHistoryDocs.push({
+                            dsid: user.dscode, dsgroup: user.group, amount: "0", sp: orderTotalSp.toString(),
+                            group: updatedOrder.salegroup, type: "order", orderno: updatedOrder.orderNo,
+                            referencename: user.dscode, pairstatus: false, monthlystatus: false,
+                            defaultdata: "PaymentHistory", levelname: "L0"
+                        });
 
                     } else {
                         // ✅ Upgrade → only activate
-                        await UserModel.updateOne(
-                            { dscode: updatedOrder.dscode },
-                            {
-                                activesp: "100"
-                            },
-                            { session }
-                        );
+                        userBulkOps.push({
+                            updateOne: {
+                                filter: { dscode: updatedOrder.dscode },
+                                update: { activesp: "100" }
+                            }
+                        });
 
-                        await PaymentHistoryModel.create([{
-                            dsid: user.dscode,
-                            dsgroup: user.group,
-                            amount: "0",
-                            sp: orderTotalSp.toString(),
-                            group: updatedOrder.salegroup,
-                            type: "upgrade",
-                            orderno: updatedOrder.orderNo,
-                            referencename: user.dscode,
-                            pairstatus: false,
-                            monthlystatus: false,
-                            defaultdata: "PaymentHistory",
-                            levelname: "L0"
-                        }], { session });
+                        paymentHistoryDocs.push({
+                            dsid: user.dscode, dsgroup: user.group, amount: "0", sp: orderTotalSp.toString(),
+                            group: updatedOrder.salegroup, type: "upgrade", orderno: updatedOrder.orderNo,
+                            referencename: user.dscode, pairstatus: false, monthlystatus: false,
+                            defaultdata: "PaymentHistory", levelname: "L0"
+                        });
                     }
 
                     // ✅ Upline distribution
@@ -176,49 +159,37 @@ export async function PATCH(req) {
                     let levelCounter = 1;
 
                     while (currentParentCode) {
+                        // Fetching specific fields only for better performance
                         const parent = await UserModel.findOne({
                             dscode: currentParentCode
-                        }).session(session);
+                        }).select("dscode pdscode group saosp sgosp").session(session);
 
                         if (!parent) break;
 
                         let updatedFields = {};
 
                         if (childGroup === "SAO") {
-                            updatedFields.saosp =
-                                (parseFloat(parent.saosp) || 0) + orderTotalSp;
+                            updatedFields.saosp = (parseFloat(parent.saosp) || 0) + orderTotalSp;
                         } else if (childGroup === "SGO") {
-                            updatedFields.sgosp =
-                                (parseFloat(parent.sgosp) || 0) + orderTotalSp;
+                            updatedFields.sgosp = (parseFloat(parent.sgosp) || 0) + orderTotalSp;
                         }
 
-                        await UserModel.updateOne(
-                            { dscode: parent.dscode },
-                            {
-                                ...(updatedFields.saosp !== undefined && {
-                                    saosp: updatedFields.saosp.toString()
-                                }),
-                                ...(updatedFields.sgosp !== undefined && {
-                                    sgosp: updatedFields.sgosp.toString()
-                                }),
-                            },
-                            { session }
-                        );
+                        userBulkOps.push({
+                            updateOne: {
+                                filter: { dscode: parent.dscode },
+                                update: {
+                                    ...(updatedFields.saosp !== undefined && { saosp: updatedFields.saosp.toString() }),
+                                    ...(updatedFields.sgosp !== undefined && { sgosp: updatedFields.sgosp.toString() }),
+                                }
+                            }
+                        });
 
-                        await PaymentHistoryModel.create([{
-                            dsid: parent.dscode,
-                            dsgroup: parent.group,
-                            amount: "0",
-                            sp: orderTotalSp.toString(),
-                            group: childGroup,
-                            type: isUpgrade ? "upgrade" : "order",
-                            orderno: updatedOrder.orderNo,
-                            referencename: user.dscode,
-                            pairstatus: false,
-                            monthlystatus: false,
-                            defaultdata: "PaymentHistory",
-                            levelname: `L${levelCounter}`
-                        }], { session });
+                        paymentHistoryDocs.push({
+                            dsid: parent.dscode, dsgroup: parent.group, amount: "0", sp: orderTotalSp.toString(),
+                            group: childGroup, type: isUpgrade ? "upgrade" : "order", orderno: updatedOrder.orderNo,
+                            referencename: user.dscode, pairstatus: false, monthlystatus: false,
+                            defaultdata: "PaymentHistory", levelname: `L${levelCounter}`
+                        });
 
                         childGroup = parent.group;
                         currentParentCode = parent.pdscode;
@@ -228,7 +199,6 @@ export async function PATCH(req) {
 
                 // ❌ CANCEL / UNAPPROVE ORDER
                 else if (data.status === false || data.cancelled === true) {
-
                     const isUpgrade = updatedOrder.ordertype === "Upgrade";
 
                     if (!isUpgrade) {
@@ -245,55 +215,35 @@ export async function PATCH(req) {
                         currentSaosp = Math.max(currentSaosp, 0);
                         currentSgosp = Math.max(currentSgosp, 0);
 
-                        await UserModel.updateOne(
-                            { dscode: updatedOrder.dscode },
-                            {
-                                earnsp: currentEarnsp.toString(),
-                                saosp: currentSaosp.toString(),
-                                sgosp: currentSgosp.toString()
-                            },
-                            { session }
-                        );
+                        userBulkOps.push({
+                            updateOne: {
+                                filter: { dscode: updatedOrder.dscode },
+                                update: { earnsp: currentEarnsp.toString(), saosp: currentSaosp.toString(), sgosp: currentSgosp.toString() }
+                            }
+                        });
 
-                        await PaymentHistoryModel.create([{
-                            dsid: user.dscode,
-                            dsgroup: user.group,
-                            amount: "0",
-                            sp: `-${orderTotalSp}`,
-                            group: updatedOrder.salegroup,
-                            type: "order-cancel",
-                            orderno: updatedOrder.orderNo,
-                            referencename: user.dscode,
-                            pairstatus: false,
-                            monthlystatus: false,
-                            defaultdata: "PaymentHistory",
-                            levelname: "L0"
-                        }], { session });
+                        paymentHistoryDocs.push({
+                            dsid: user.dscode, dsgroup: user.group, amount: "0", sp: `-${orderTotalSp}`,
+                            group: updatedOrder.salegroup, type: "order-cancel", orderno: updatedOrder.orderNo,
+                            referencename: user.dscode, pairstatus: false, monthlystatus: false,
+                            defaultdata: "PaymentHistory", levelname: "L0"
+                        });
 
                     } else {
                         // ✅ Cancel upgrade → set activesp = 50
-                        await UserModel.updateOne(
-                            { dscode: updatedOrder.dscode },
-                            {
-                                activesp: "50"
-                            },
-                            { session }
-                        );
+                        userBulkOps.push({
+                            updateOne: {
+                                filter: { dscode: updatedOrder.dscode },
+                                update: { activesp: "50" }
+                            }
+                        });
 
-                        await PaymentHistoryModel.create([{
-                            dsid: user.dscode,
-                            dsgroup: user.group,
-                            amount: "0",
-                            sp: `-${orderTotalSp}`,
-                            group: updatedOrder.salegroup,
-                            type: "upgrade-cancel",
-                            orderno: updatedOrder.orderNo,
-                            referencename: user.dscode,
-                            pairstatus: false,
-                            monthlystatus: false,
-                            defaultdata: "PaymentHistory",
-                            levelname: "L0"
-                        }], { session });
+                        paymentHistoryDocs.push({
+                            dsid: user.dscode, dsgroup: user.group, amount: "0", sp: `-${orderTotalSp}`,
+                            group: updatedOrder.salegroup, type: "upgrade-cancel", orderno: updatedOrder.orderNo,
+                            referencename: user.dscode, pairstatus: false, monthlystatus: false,
+                            defaultdata: "PaymentHistory", levelname: "L0"
+                        });
                     }
 
                     // ✅ Upline deduction
@@ -304,56 +254,48 @@ export async function PATCH(req) {
                     while (currentParentCode) {
                         const parent = await UserModel.findOne({
                             dscode: currentParentCode
-                        }).session(session);
+                        }).select("dscode pdscode group saosp sgosp").session(session);
 
                         if (!parent) break;
 
                         let updatedFields = {};
 
                         if (childGroup === "SAO") {
-                            updatedFields.saosp = Math.max(
-                                (parseFloat(parent.saosp) || 0) - orderTotalSp,
-                                0
-                            );
+                            updatedFields.saosp = Math.max((parseFloat(parent.saosp) || 0) - orderTotalSp, 0);
                         } else if (childGroup === "SGO") {
-                            updatedFields.sgosp = Math.max(
-                                (parseFloat(parent.sgosp) || 0) - orderTotalSp,
-                                0
-                            );
+                            updatedFields.sgosp = Math.max((parseFloat(parent.sgosp) || 0) - orderTotalSp, 0);
                         }
 
-                        await UserModel.updateOne(
-                            { dscode: parent.dscode },
-                            {
-                                ...(updatedFields.saosp !== undefined && {
-                                    saosp: updatedFields.saosp.toString()
-                                }),
-                                ...(updatedFields.sgosp !== undefined && {
-                                    sgosp: updatedFields.sgosp.toString()
-                                }),
-                            },
-                            { session }
-                        );
+                        userBulkOps.push({
+                            updateOne: {
+                                filter: { dscode: parent.dscode },
+                                update: {
+                                    ...(updatedFields.saosp !== undefined && { saosp: updatedFields.saosp.toString() }),
+                                    ...(updatedFields.sgosp !== undefined && { sgosp: updatedFields.sgosp.toString() }),
+                                }
+                            }
+                        });
 
-                        await PaymentHistoryModel.create([{
-                            dsid: parent.dscode,
-                            dsgroup: parent.group,
-                            amount: "0",
-                            sp: `-${orderTotalSp}`,
-                            group: childGroup,
-                            type: isUpgrade ? "upgrade-cancel" : "order-cancel",
-                            orderno: updatedOrder.orderNo,
-                            referencename: user.dscode,
-                            pairstatus: false,
-                            monthlystatus: false,
-                            defaultdata: "PaymentHistory",
-                            levelname: `L${levelCounter}`
-                        }], { session });
+                        paymentHistoryDocs.push({
+                            dsid: parent.dscode, dsgroup: parent.group, amount: "0", sp: `-${orderTotalSp}`,
+                            group: childGroup, type: isUpgrade ? "upgrade-cancel" : "order-cancel", orderno: updatedOrder.orderNo,
+                            referencename: user.dscode, pairstatus: false, monthlystatus: false,
+                            defaultdata: "PaymentHistory", levelname: `L${levelCounter}`
+                        });
 
                         childGroup = parent.group;
                         currentParentCode = parent.pdscode;
                         levelCounter++;
                     }
+                }
+
+                // ⚡ FINALLY, EXECUTE ALL BATCHES AT ONCE
+                if (userBulkOps.length > 0) {
+                    await UserModel.bulkWrite(userBulkOps, { session });
+                }
+
+                if (paymentHistoryDocs.length > 0) {
+                    await PaymentHistoryModel.insertMany(paymentHistoryDocs, { session });
                 }
             }
 

@@ -111,7 +111,7 @@ export default function OrderDetails({ data, role }) {
         if (result.success) {
           setOrderStatus(newStatus);
           alert(`C&F Order cancelled! ${refundAmount} points refunded successfully.`);
-          // window.location.reload();
+          window.location.reload();
         } else {
           throw new Error(result.message || 'Failed to cancel C&F order');
         }

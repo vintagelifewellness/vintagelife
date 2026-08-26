@@ -41,258 +41,264 @@ export async function PATCH(req, { params }) {
                 const orderTotalSp = parseFloat(updatedOrder.totalsp) || 0;
 
                 // ✅ APPROVE ORDER
-              // ✅ APPROVE ORDER
-if (data.status === true && !data.cancelled) {
+                // ✅ APPROVE ORDER
+                if (data.status === true && !data.cancelled) {
 
-    const isUpgrade = updatedOrder.ordertype === "Upgrade";
+                    const isUpgrade = updatedOrder.ordertype === "Upgrade";
 
-    if (!isUpgrade) {
-        // ✅ Normal order → add self SP
-        currentEarnsp += orderTotalSp;
+                    if (!isUpgrade) {
+                        // ✅ Normal order → add self SP
+                        currentEarnsp += orderTotalSp;
 
-        if (updatedOrder.salegroup === "SAO") {
-            currentSaosp += orderTotalSp;
-        } else if (updatedOrder.salegroup === "SGO") {
-            currentSgosp += orderTotalSp;
-        }
+                        if (updatedOrder.salegroup === "SAO") {
+                            currentSaosp += orderTotalSp;
+                        } else if (updatedOrder.salegroup === "SGO") {
+                            currentSgosp += orderTotalSp;
+                        }
 
-        await UserModel.updateOne(
-            { dscode: updatedOrder.dscode },
-            {
-                earnsp: currentEarnsp.toString(),
-                saosp: currentSaosp.toString(),
-                sgosp: currentSgosp.toString()
-            },
-            { session }
-        );
+                        await UserModel.updateOne(
+                            { dscode: updatedOrder.dscode },
+                            {
+                                earnsp: currentEarnsp.toString(),
+                                saosp: currentSaosp.toString(),
+                                sgosp: currentSgosp.toString()
+                            },
+                            { session }
+                        );
 
-        await PaymentHistoryModel.create([{
-            dsid: user.dscode,
-            dsgroup: user.group,
-            amount: "0",
-            sp: orderTotalSp.toString(),
-            group: updatedOrder.salegroup,
-            type: "order",
-            orderno: updatedOrder.orderNo,
-            referencename: user.dscode,
-            pairstatus: false,
-            monthlystatus: false,
-            defaultdata: "PaymentHistory",
-            levelname: "L0"
-        }], { session });
+                        await PaymentHistoryModel.create([{
+                            dsid: user.dscode,
+                            dsgroup: user.group,
+                            amount: "0",
+                            sp: orderTotalSp.toString(),
+                            group: updatedOrder.salegroup,
+                            type: "order",
+                            orderno: updatedOrder.orderNo,
+                            referencename: user.dscode,
+                            pairstatus: false,
+                            monthlystatus: false,
+                            defaultdata: "PaymentHistory",
+                            levelname: "L0"
+                        }], { session });
 
-    } else {
-        // ✅ Upgrade → only activate
-        await UserModel.updateOne(
-            { dscode: updatedOrder.dscode },
-            {
-                activesp: "100"
-            },
-            { session }
-        );
+                    } else {
+                        // ✅ Upgrade → only activate
+                        await UserModel.updateOne(
+                            { dscode: updatedOrder.dscode },
+                            {
+                                activesp: "100"
+                            },
+                            { session }
+                        );
 
-        await PaymentHistoryModel.create([{
-            dsid: user.dscode,
-            dsgroup: user.group,
-            amount: "0",
-            sp: orderTotalSp.toString(),
-            group: updatedOrder.salegroup,
-            type: "upgrade",
-            orderno: updatedOrder.orderNo,
-            referencename: user.dscode,
-            pairstatus: false,
-            monthlystatus: false,
-            defaultdata: "PaymentHistory",
-            levelname: "L0"
-        }], { session });
-    }
+                        await PaymentHistoryModel.create([{
+                            dsid: user.dscode,
+                            dsgroup: user.group,
+                            amount: "0",
+                            sp: orderTotalSp.toString(),
+                            group: updatedOrder.salegroup,
+                            type: "upgrade",
+                            orderno: updatedOrder.orderNo,
+                            referencename: user.dscode,
+                            pairstatus: false,
+                            monthlystatus: false,
+                            defaultdata: "PaymentHistory",
+                            levelname: "L0"
+                        }], { session });
+                    }
 
-    // ✅ Upline distribution (same for both)
-    let currentParentCode = user.pdscode;
-    let childGroup = user.group;
-    let levelCounter = 1;
+                    // ✅ Upline distribution (same for both)
+                    let currentParentCode = user.pdscode;
+                    let childGroup = user.group;
+                    let levelCounter = 1;
 
-    while (currentParentCode) {
-        const parent = await UserModel.findOne({
-            dscode: currentParentCode
-        }).session(session);
+                    const userBulkOperations = [];
+                    const paymentHistoryDocs = [];
 
-        if (!parent) break;
+                    while (currentParentCode) {
 
-        let updatedFields = {};
+                        const parent = await UserModel.findOne({ dscode: currentParentCode })
+                            .select("dscode pdscode group saosp sgosp")
+                            .session(session);
 
-        if (childGroup === "SAO") {
-            updatedFields.saosp =
-                (parseFloat(parent.saosp) || 0) + orderTotalSp;
-        } else if (childGroup === "SGO") {
-            updatedFields.sgosp =
-                (parseFloat(parent.sgosp) || 0) + orderTotalSp;
-        }
+                        if (!parent) break;
 
-        await UserModel.updateOne(
-            { dscode: parent.dscode },
-            {
-                ...(updatedFields.saosp !== undefined && {
-                    saosp: updatedFields.saosp.toString()
-                }),
-                ...(updatedFields.sgosp !== undefined && {
-                    sgosp: updatedFields.sgosp.toString()
-                }),
-            },
-            { session }
-        );
+                        let updatedFields = {};
 
-        await PaymentHistoryModel.create([{
-            dsid: parent.dscode,
-            dsgroup: parent.group,
-            amount: "0",
-            sp: orderTotalSp.toString(),
-            group: childGroup,
-            type: isUpgrade ? "upgrade" : "order",
-            orderno: updatedOrder.orderNo,
-            referencename: user.dscode,
-            pairstatus: false,
-            monthlystatus: false,
-            defaultdata: "PaymentHistory",
-            levelname: `L${levelCounter}`
-        }], { session });
+                        if (childGroup === "SAO") {
+                            updatedFields.saosp = (parseFloat(parent.saosp) || 0) + orderTotalSp;
+                        } else if (childGroup === "SGO") {
+                            updatedFields.sgosp = (parseFloat(parent.sgosp) || 0) + orderTotalSp;
+                        }
 
-        childGroup = parent.group;
-        currentParentCode = parent.pdscode;
-        levelCounter++;
-    }
-}
+                        userBulkOperations.push({
+                            updateOne: {
+                                filter: { dscode: parent.dscode },
+                                update: {
+                                    ...(updatedFields.saosp !== undefined && { saosp: updatedFields.saosp.toString() }),
+                                    ...(updatedFields.sgosp !== undefined && { sgosp: updatedFields.sgosp.toString() })
+                                }
+                            }
+                        });
+
+                        paymentHistoryDocs.push({
+                            dsid: parent.dscode,
+                            dsgroup: parent.group,
+                            amount: "0",
+                            sp: orderTotalSp.toString(),
+                            group: childGroup,
+                            type: isUpgrade ? "upgrade" : "order",
+                            orderno: updatedOrder.orderNo,
+                            referencename: user.dscode,
+                            pairstatus: false,
+                            monthlystatus: false,
+                            defaultdata: "PaymentHistory",
+                            levelname: `L${levelCounter}`
+                        });
+
+                        childGroup = parent.group;
+                        currentParentCode = parent.pdscode;
+                        levelCounter++;
+                    }
+                    if (userBulkOperations.length > 0) {
+                        await UserModel.bulkWrite(userBulkOperations, { session });
+                    }
+
+                    if (paymentHistoryDocs.length > 0) {
+                        await PaymentHistoryModel.insertMany(paymentHistoryDocs, { session });
+                    }
+                }
 
 
-// ❌ CANCEL / UNAPPROVE ORDER
-else if (data.status === false || data.cancelled === true) {
+                // ❌ CANCEL / UNAPPROVE ORDER
+                else if (data.status === false || data.cancelled === true) {
 
-    const isUpgrade = updatedOrder.ordertype === "Upgrade";
+                    const isUpgrade = updatedOrder.ordertype === "Upgrade";
 
-    if (!isUpgrade) {
-        // ✅ Normal order → deduct self SP
-        currentEarnsp -= orderTotalSp;
+                    if (!isUpgrade) {
+                        // ✅ Normal order → deduct self SP
+                        currentEarnsp -= orderTotalSp;
 
-        if (updatedOrder.salegroup === "SAO") {
-            currentSaosp -= orderTotalSp;
-        } else if (updatedOrder.salegroup === "SGO") {
-            currentSgosp -= orderTotalSp;
-        }
+                        if (updatedOrder.salegroup === "SAO") {
+                            currentSaosp -= orderTotalSp;
+                        } else if (updatedOrder.salegroup === "SGO") {
+                            currentSgosp -= orderTotalSp;
+                        }
 
-        currentEarnsp = Math.max(currentEarnsp, 0);
-        currentSaosp = Math.max(currentSaosp, 0);
-        currentSgosp = Math.max(currentSgosp, 0);
+                        currentEarnsp = Math.max(currentEarnsp, 0);
+                        currentSaosp = Math.max(currentSaosp, 0);
+                        currentSgosp = Math.max(currentSgosp, 0);
 
-        await UserModel.updateOne(
-            { dscode: updatedOrder.dscode },
-            {
-                earnsp: currentEarnsp.toString(),
-                saosp: currentSaosp.toString(),
-                sgosp: currentSgosp.toString()
-            },
-            { session }
-        );
+                        await UserModel.updateOne(
+                            { dscode: updatedOrder.dscode },
+                            {
+                                earnsp: currentEarnsp.toString(),
+                                saosp: currentSaosp.toString(),
+                                sgosp: currentSgosp.toString()
+                            },
+                            { session }
+                        );
 
-        await PaymentHistoryModel.create([{
-            dsid: user.dscode,
-            dsgroup: user.group,
-            amount: "0",
-            sp: `-${orderTotalSp}`,
-            group: updatedOrder.salegroup,
-            type: "order-cancel",
-            orderno: updatedOrder.orderNo,
-            referencename: user.dscode,
-            pairstatus: false,
-            monthlystatus: false,
-            defaultdata: "PaymentHistory",
-            levelname: "L0"
-        }], { session });
+                        await PaymentHistoryModel.create([{
+                            dsid: user.dscode,
+                            dsgroup: user.group,
+                            amount: "0",
+                            sp: `-${orderTotalSp}`,
+                            group: updatedOrder.salegroup,
+                            type: "order-cancel",
+                            orderno: updatedOrder.orderNo,
+                            referencename: user.dscode,
+                            pairstatus: false,
+                            monthlystatus: false,
+                            defaultdata: "PaymentHistory",
+                            levelname: "L0"
+                        }], { session });
 
-    } else {
-        // ✅ Cancel upgrade → set activesp = 50
-        await UserModel.updateOne(
-            { dscode: updatedOrder.dscode },
-            {
-                activesp: "50"
-            },
-            { session }
-        );
+                    } else {
+                        // ✅ Cancel upgrade → set activesp = 50
+                        await UserModel.updateOne(
+                            { dscode: updatedOrder.dscode },
+                            {
+                                activesp: "50"
+                            },
+                            { session }
+                        );
 
-        await PaymentHistoryModel.create([{
-            dsid: user.dscode,
-            dsgroup: user.group,
-            amount: "0",
-            sp: `-${orderTotalSp}`,
-            group: updatedOrder.salegroup,
-            type: "upgrade-cancel",
-            orderno: updatedOrder.orderNo,
-            referencename: user.dscode,
-            pairstatus: false,
-            monthlystatus: false,
-            defaultdata: "PaymentHistory",
-            levelname: "L0"
-        }], { session });
-    }
+                        await PaymentHistoryModel.create([{
+                            dsid: user.dscode,
+                            dsgroup: user.group,
+                            amount: "0",
+                            sp: `-${orderTotalSp}`,
+                            group: updatedOrder.salegroup,
+                            type: "upgrade-cancel",
+                            orderno: updatedOrder.orderNo,
+                            referencename: user.dscode,
+                            pairstatus: false,
+                            monthlystatus: false,
+                            defaultdata: "PaymentHistory",
+                            levelname: "L0"
+                        }], { session });
+                    }
 
-    // ✅ Upline deduction (same for both)
-    let currentParentCode = user.pdscode;
-    let childGroup = user.group;
-    let levelCounter = 1;
+                    // ✅ Upline deduction (same for both)
+                    let currentParentCode = user.pdscode;
+                    let childGroup = user.group;
+                    let levelCounter = 1;
 
-    while (currentParentCode) {
-        const parent = await UserModel.findOne({
-            dscode: currentParentCode
-        }).session(session);
+                    while (currentParentCode) {
+                        const parent = await UserModel.findOne({
+                            dscode: currentParentCode
+                        }).session(session);
 
-        if (!parent) break;
+                        if (!parent) break;
 
-        let updatedFields = {};
+                        let updatedFields = {};
 
-        if (childGroup === "SAO") {
-            updatedFields.saosp = Math.max(
-                (parseFloat(parent.saosp) || 0) - orderTotalSp,
-                0
-            );
-        } else if (childGroup === "SGO") {
-            updatedFields.sgosp = Math.max(
-                (parseFloat(parent.sgosp) || 0) - orderTotalSp,
-                0
-            );
-        }
+                        if (childGroup === "SAO") {
+                            updatedFields.saosp = Math.max(
+                                (parseFloat(parent.saosp) || 0) - orderTotalSp,
+                                0
+                            );
+                        } else if (childGroup === "SGO") {
+                            updatedFields.sgosp = Math.max(
+                                (parseFloat(parent.sgosp) || 0) - orderTotalSp,
+                                0
+                            );
+                        }
 
-        await UserModel.updateOne(
-            { dscode: parent.dscode },
-            {
-                ...(updatedFields.saosp !== undefined && {
-                    saosp: updatedFields.saosp.toString()
-                }),
-                ...(updatedFields.sgosp !== undefined && {
-                    sgosp: updatedFields.sgosp.toString()
-                }),
-            },
-            { session }
-        );
+                        await UserModel.updateOne(
+                            { dscode: parent.dscode },
+                            {
+                                ...(updatedFields.saosp !== undefined && {
+                                    saosp: updatedFields.saosp.toString()
+                                }),
+                                ...(updatedFields.sgosp !== undefined && {
+                                    sgosp: updatedFields.sgosp.toString()
+                                }),
+                            },
+                            { session }
+                        );
 
-        await PaymentHistoryModel.create([{
-            dsid: parent.dscode,
-            dsgroup: parent.group,
-            amount: "0",
-            sp: `-${orderTotalSp}`,
-            group: childGroup,
-            type: isUpgrade ? "upgrade-cancel" : "order-cancel",
-            orderno: updatedOrder.orderNo,
-            referencename: user.dscode,
-            pairstatus: false,
-            monthlystatus: false,
-            defaultdata: "PaymentHistory",
-            levelname: `L${levelCounter}`
-        }], { session });
+                        await PaymentHistoryModel.create([{
+                            dsid: parent.dscode,
+                            dsgroup: parent.group,
+                            amount: "0",
+                            sp: `-${orderTotalSp}`,
+                            group: childGroup,
+                            type: isUpgrade ? "upgrade-cancel" : "order-cancel",
+                            orderno: updatedOrder.orderNo,
+                            referencename: user.dscode,
+                            pairstatus: false,
+                            monthlystatus: false,
+                            defaultdata: "PaymentHistory",
+                            levelname: `L${levelCounter}`
+                        }], { session });
 
-        childGroup = parent.group;
-        currentParentCode = parent.pdscode;
-        levelCounter++;
-    }
-}
+                        childGroup = parent.group;
+                        currentParentCode = parent.pdscode;
+                        levelCounter++;
+                    }
+                }
             }
 
             await session.commitTransaction();

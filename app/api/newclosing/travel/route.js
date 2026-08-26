@@ -17,7 +17,7 @@ export async function POST(req) {
     // 2. Use .lean() and projection to fetch only necessary data as pure JS objects
     const potentialUsers = await UserModel.find(
       {},
-      "dscode name acnumber ifscCode bankName saosp sgosp travellastMatchedsao travellastMatchedsgo"
+      "dscode name acnumber ifscCode bankName saosp sgosp activesp travellastMatchedsao travellastMatchedsgo"
     ).lean();
 
     const closingEntries = [];
@@ -30,6 +30,10 @@ export async function POST(req) {
     for (const user of potentialUsers) {
       // O(1) memory check instead of awaiting the DB
       if (!saoSet.has(user.dscode) || !sgoSet.has(user.dscode)) {
+        continue;
+      }
+
+      if (user.activesp !== "100") {
         continue;
       }
 
