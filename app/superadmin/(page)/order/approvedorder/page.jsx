@@ -153,11 +153,11 @@ export default function PendingOrders() {
                                         </td>
 
                                         {/* Remark Column */}
-                                   <td className="border border-gray-300 px-2 md:px-4 py-2">
-    {order.orderat === "C&F"
-        ? `C&F (${order.cfName || "N/A"})`
-        : "Main"}
-</td>
+                                        <td className="border border-gray-300 px-2 md:px-4 py-2">
+                                            {order.orderat === "C&F"
+                                                ? `C&F (${order.cfName || "N/A"})`
+                                                : "Main"}
+                                        </td>
 
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">
                                             <button

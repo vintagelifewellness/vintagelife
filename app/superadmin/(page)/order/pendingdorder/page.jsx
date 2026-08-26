@@ -361,8 +361,8 @@ export default function PendingOrders() {
                                         {/* Remark Column */}
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">
                                             {order.orderat === "C&F"
-                                                ? `${order.orderat} (${order.cfName || "N/A"})`
-                                                : order.orderat}
+                                                ? `C&F (${order.cfName || "N/A"})`
+                                                : "Main"}
                                         </td>
 
                                         <td className="border border-gray-300 px-2 md:px-4 py-2">

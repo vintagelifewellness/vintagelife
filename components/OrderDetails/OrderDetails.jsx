@@ -22,62 +22,110 @@ export default function OrderDetails({ data, role }) {
   const isAdmin = typeof window !== "undefined" && window.location.pathname.includes("/superadmin");
 
 
-
   const handleStatusUpdate = async (newStatus) => {
     setIsLoading(true);
-    try {
+    setErrorMessage("");
+    setShowModal(false);
 
+    try {
       const isCandFOrder = data.cfName ? true : false;
 
       if (isCandFOrder) {
-
         const totalRpAmount = data.productDetails.reduce((acc, product) => {
           const matched = getProductDetails(product.product);
           const qty = Number(product.quantity) || 0;
-          return acc + (matched ? matched.sp * qty : 0);
+
+          return acc + (matched ? Number(matched.sp) * qty : 0);
         }, 0);
 
         const response = await fetch(`/api/candf/order-approve`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             orderId: data._id,
             status: newStatus,
-            requiredPoints: totalRpAmount
+            requiredPoints: totalRpAmount,
           }),
         });
 
-        const result = await response.json();
+        // Safely parse backend response
+        let result;
 
-        if (result.success) {
-          setOrderStatus(newStatus);
-          alert(`C&F Order approved successfully!`);
-          window.location.reload();
-        } else {
-          setErrorMessage(result.message);
-          setShowModal(true);
+        try {
+          result = await response.json();
+        } catch {
+          result = {
+            success: false,
+            message: `Server returned an invalid response (${response.status})`,
+          };
         }
-      } else {
 
+        if (!response.ok || !result.success) {
+          const backendError =
+            result?.message ||
+            result?.error ||
+            result?.errors?.[0]?.message ||
+            `Request failed with status ${response.status}`;
+
+          setErrorMessage(backendError);
+          setShowModal(true);
+          return;
+        }
+
+        setOrderStatus(newStatus);
+        window.location.reload();
+
+      } else {
         const response = await fetch(`/api/order/update/${data._id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: data._id, status: newStatus }),
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: data._id,
+            status: newStatus,
+          }),
         });
 
-        const result = await response.json();
+        let result;
 
-        if (result.success) {
-          setOrderStatus(newStatus);
-          alert(`Main Branch Order approved successfully!`);
-          window.location.reload();
-        } else {
-          alert(`Error: ${result.message || 'Failed'}`);
+        try {
+          result = await response.json();
+        } catch {
+          result = {
+            success: false,
+            message: `Server returned an invalid response (${response.status})`,
+          };
         }
+
+        if (!response.ok || !result.success) {
+          const backendError =
+            result?.message ||
+            result?.error ||
+            result?.errors?.[0]?.message ||
+            `Request failed with status ${response.status}`;
+
+          setErrorMessage(backendError);
+          setShowModal(true);
+          return;
+        }
+
+        setOrderStatus(newStatus);
+        window.location.reload();
       }
+
     } catch (error) {
-      console.error('Error:', error);
-      alert("Server Error.");
+      console.error("Error:", error);
+
+      setErrorMessage(
+        error?.message ||
+        "Something went wrong while processing the order."
+      );
+
+      setShowModal(true);
+
     } finally {
       setIsLoading(false);
     }
@@ -502,35 +550,47 @@ export default function OrderDetails({ data, role }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm transition-opacity">
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-md transform transition-all text-center animate-fade-in-up">
 
-            {/* Warning Icon */}
+            {/* Error Icon */}
             <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 border-[4px] border-red-100">
-              <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              <svg
+                className="w-10 h-10 text-red-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
               </svg>
             </div>
 
-            <h3 className="text-2xl font-extrabold text-gray-900 mb-2">Insufficient Points!</h3>
+            <h3 className="text-2xl font-extrabold text-gray-900 mb-2">
+              Unable to Approve Order
+            </h3>
 
-            <p className="text-sm text-gray-500 mb-4 px-2">
-              Your current point balance is too low to approve this order. Please purchase more points to proceed.
+            {/* Backend Error */}
+            <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-5 text-left">
+              <p className="text-sm font-medium text-red-700 break-words">
+                {errorMessage || "Something went wrong while approving this order."}
+              </p>
+            </div>
+
+            <p className="text-sm text-gray-500 mb-5 px-2">
+              Please resolve the issue and try again.
             </p>
 
-
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition-colors duration-200"
-              >
-                Cancel
-              </button>
+            <div className="flex justify-center">
               <button
                 onClick={() => {
                   setShowModal(false);
-
+                  setErrorMessage("");
                 }}
-                className="flex-1 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-200 transition-all duration-200 transform hover:scale-[1.02]"
+                className="w-full px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl transition-colors duration-200"
               >
-                Purchase Points
+                Close
               </button>
             </div>
 

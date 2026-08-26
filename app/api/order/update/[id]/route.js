@@ -3,7 +3,7 @@ import OrderModel from "@/model/Order";
 import mongoose from "mongoose";
 import UserModel from "@/model/User";
 import PaymentHistoryModel from "@/model/PaymentHistory";
-
+import ProductModel from "@/model/Product";
 export async function PATCH(req, { params }) {
     await dbConnect();
 
@@ -43,7 +43,33 @@ export async function PATCH(req, { params }) {
                 // ✅ APPROVE ORDER
                 // ✅ APPROVE ORDER
                 if (data.status === true && !data.cancelled) {
+                    for (const item of updatedOrder.productDetails) {
+                        const product = await ProductModel.findOne({ productname: item.product }).session(session);
 
+                        if (!product) {
+                            await session.abortTransaction();
+                            session.endSession();
+                            return Response.json({
+                                message: `Product '${item.product}' not found in database.`,
+                                success: false
+                            }, { status: 404 });
+                        }
+
+                        const qtyToDeduct = parseInt(item.quantity, 10) || 0;
+
+                        if (product.stock < qtyToDeduct) {
+                            await session.abortTransaction();
+                            session.endSession();
+                            return Response.json({
+                                message: `Insufficient stock for '${item.product}'. Available: ${product.stock}, Required: ${qtyToDeduct}`,
+                                success: false
+                            }, { status: 400 });
+                        }
+
+                        // Deduct stock and save
+                        product.stock -= qtyToDeduct;
+                        await product.save({ session });
+                    }
                     const isUpgrade = updatedOrder.ordertype === "Upgrade";
 
                     if (!isUpgrade) {
@@ -172,7 +198,15 @@ export async function PATCH(req, { params }) {
 
                 // ❌ CANCEL / UNAPPROVE ORDER
                 else if (data.status === false || data.cancelled === true) {
+                    for (const item of updatedOrder.productDetails) {
+                        const product = await ProductModel.findOne({ productname: item.product }).session(session);
 
+                        if (product) {
+                            const qtyToAddBack = parseInt(item.quantity, 10) || 0;
+                            product.stock += qtyToAddBack;
+                            await product.save({ session });
+                        }
+                    }
                     const isUpgrade = updatedOrder.ordertype === "Upgrade";
 
                     if (!isUpgrade) {
