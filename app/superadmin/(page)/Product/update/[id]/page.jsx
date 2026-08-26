@@ -18,7 +18,8 @@ export default function AddOrUpdateProductPage() {
         taxvalue: "",
         cgst: "",
         sgst: "",
-        igst: ""
+        igst: "",
+        stock: ""
     });
 
     const [productGroups, setProductGroups] = useState([]);
@@ -54,6 +55,7 @@ export default function AddOrUpdateProductPage() {
                     setFormData({
                         image: fetchedData.image || "",
                         productname: fetchedData.productname || "",
+                        stock: fetchedData.stock || "",
                         group: fetchedData.group || "",
                         dp: fetchedData.dp || "",
                         sp: fetchedData.sp || "",
@@ -97,7 +99,7 @@ export default function AddOrUpdateProductPage() {
     // Handle Submit (Add or Update)
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.productname || !formData.group || !formData.dp || !formData.sp || !formData.mrp || !formData.hsn || !formData.taxvalue || !formData.igst || loading) {
+        if (!formData.productname || !formData.stock || !formData.group || !formData.dp || !formData.sp || !formData.mrp || !formData.hsn || !formData.taxvalue || !formData.igst || loading) {
             setError("All fields are required.");
             return;
         }
@@ -115,7 +117,7 @@ export default function AddOrUpdateProductPage() {
                 response = await axios.post("/api/Product/Product/create", formData);
                 setSuccess(response.data.message || "Product added successfully.");
                 setFormData({
-                    image: "", productname: "", sp: "", mrp: "", group: "", dp: "", hsn: "",
+                    image: "", productname: "", sp: "", mrp: "", group: "", dp: "", hsn: "", stock: "",
                     taxvalue: "",
                     cgst: "",
                     sgst: "",
@@ -158,11 +160,13 @@ export default function AddOrUpdateProductPage() {
 
             <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                 <div>
-                    <label className="block mb-1 font-medium">Product Name</label>
-                    <input type="text" name="productname" placeholder="Product Name" value={formData.productname} onChange={handleChange} className="w-full p-2 border rounded" required />
+                    <label className="block mb-1 font-medium">Product Name 
+                        <span className=" text-white text-[9px]   rounded px-1 bg-red-500 ms-2">Update Not Allow</span>
+                    </label>
+                    <input type="text" disabled name="productname" placeholder="Product Name" value={formData.productname} onChange={handleChange} className="w-full p-2 border rounded" required />
                 </div>
 
-                <div>
+                {/* <div>
                     <label className="block mb-1 font-medium">Group</label>
                     <select name="group" value={formData.group} onChange={handleChange} className="w-full p-2 border rounded" required disabled={fetching || productGroups.length === 0}>
                         <option value="">Select Group</option>
@@ -170,7 +174,7 @@ export default function AddOrUpdateProductPage() {
                             <option key={group._id} value={group.groupname}>{group.groupname}</option>
                         ))}
                     </select>
-                </div>
+                </div> */}
 
                 <div>
                     <label className="block mb-1 font-medium">RP</label>
@@ -209,7 +213,12 @@ export default function AddOrUpdateProductPage() {
 
                 <div>
                     <label className="block mb-1 font-medium">IGST</label>
-                    <input type="text" name="igst" placeholder="IGST" value={formData.igst} onChange={handleChange} className="w-full p-3 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200" required />
+                    <input type="number" name="igst" placeholder="IGST" value={formData.igst} onChange={handleChange} className="w-full p-3 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200" required />
+                </div>
+
+                  <div>
+                    <label className="block mb-1 font-medium">Avaiable Stock</label>
+                    <input type="number" name="stock" placeholder="stock" value={formData.stock} onChange={handleChange} className="w-full p-3 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200" required />
                 </div>
 
                 <div>

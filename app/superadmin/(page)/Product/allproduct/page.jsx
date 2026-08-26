@@ -110,6 +110,7 @@ export default function Page() {
                                 <tr>
                                     <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">Product</th>
                                     {/* <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">Group</th> */}
+                                    <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">Avaliable Stock</th>
                                     <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">Discount Price</th>
                                     <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">Market Price</th>
                                     <th scope="col" className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200">RP</th>
@@ -146,6 +147,11 @@ export default function Page() {
                                             </td> */}
                                             <td className="px-6 py-4">
                                                 <div className="flex items-baseline space-x-2">
+                                                    <div className="font-extrabold textn">{product.stock}</div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-baseline space-x-2">
                                                     <div className="font-extrabold textn">₹{product.dp}</div>
                                                 </div>
                                             </td>
@@ -159,7 +165,7 @@ export default function Page() {
                                                     <div className="text-sm textn">{product.sp}</div>
                                                 </div>
                                             </td>
-                                             <td className="px-6 py-4">
+                                            <td className="px-6 py-4">
                                                 <div className="flex items-baseline space-x-2">
                                                     <div className="text-sm textn">{product.hsn}</div>
                                                 </div>

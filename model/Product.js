@@ -9,7 +9,7 @@ const ProductSchema = new Schema(
         dp: { type: String, required: true },
         sp: { type: String, required: true },
         mrp: { type: String, required: true },
-
+        stock: { type: Number, required: true, default: 0 },
         hsn: { type: String, },
         taxvalue: { type: String, },
         cgst: { type: String, },

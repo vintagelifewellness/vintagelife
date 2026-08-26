@@ -31,7 +31,7 @@ const FormTab = ({ step, setStep, currentStep, title }) => (
 export default function AddProductPage() {
     const [formData, setFormData] = useState({
         image: "", productname: "", group: "vintage", dp: "", sp: "", mrp: "",
-        hsn: "", taxvalue: "", cgst: "", sgst: "", igst: ""
+        hsn: "", taxvalue: "", cgst: "", sgst: "", igst: "", stock: ""
     });
 
     const [productGroups, setProductGroups] = useState([]);
@@ -65,9 +65,9 @@ export default function AddProductPage() {
     };
 
     const isFormValid = () => {
-        const { image, productname, group, dp, sp, mrp, hsn, taxvalue, igst } = formData;
+        const { image, productname, stock, group, dp, sp, mrp, hsn, taxvalue, igst } = formData;
         // CGST and SGST are optional, as per the original user code
-        return image && productname && group && dp && sp && mrp && hsn && taxvalue && igst;
+        return image && productname && stock && group && dp && sp && mrp && hsn && taxvalue && igst;
     };
 
     const handleSubmit = async (e) => {
@@ -84,7 +84,7 @@ export default function AddProductPage() {
             toast.success(response.data.message || "Product added successfully.");
             setFormData({
                 image: "", productname: "", sp: "", mrp: "", group: "vintage", dp: "", hsn: "",
-                taxvalue: "", cgst: "", sgst: "", igst: ""
+                taxvalue: "", cgst: "", sgst: "", igst: "",stock:""
             });
             setStep(1); // Reset to the first tab
         } catch (error) {
@@ -103,7 +103,7 @@ export default function AddProductPage() {
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name</label>
                             <input type="text" name="productname" placeholder="e.g., Wireless Mouse" value={formData.productname} onChange={handleChange} className="form-input" required />
                         </div>
-                      
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Image</label>
                             <div className="flex items-center justify-center w-full">
@@ -165,6 +165,12 @@ export default function AddProductPage() {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SGST (%)</label>
                                 <input type="number" name="sgst" placeholder="Enter SGST percentage" value={formData.sgst} onChange={handleChange} className="form-input" />
+                            </div>
+
+
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Avaliable Stock</label>
+                                <input type="number" name="stock" placeholder="Enter Avaliable Stock" value={formData.stock} onChange={handleChange} className="form-input" />
                             </div>
                         </div>
                     </div>
