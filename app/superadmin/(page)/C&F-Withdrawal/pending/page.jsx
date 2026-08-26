@@ -132,7 +132,7 @@ export default function CandFPendingPage() {
   return (
     <div className="p-4 space-y-6">
       <h1 className='text-2xl font-bold text-orange-600 underline uppercase'>Pending C&F Withdrawal</h1>
-      
+
       <div className="flex flex-wrap justify-between gap-4">
         <input
           type="text"
@@ -169,10 +169,15 @@ export default function CandFPendingPage() {
                 </th>
                 <th className="p-3 border">DSID</th>
                 <th className="p-3 border">Name</th>
-                <th className="p-3 border text-center">Last Month Pts</th>
+                <th className="p-3 border">A/C No</th>
+                <th className="p-3 border">IFSC</th>
+                <th className="p-3 border">Bank</th>
+                <th className="p-3 border text-center">Last Match Pts</th>
                 <th className="p-3 border text-center text-blue-600">Used Pts</th>
-                <th className="p-3 border font-bold text-green-700">Pay Amount</th>
-                <th className="p-3 border">Date</th>
+                <th className="p-3 border font-bold text-gray-600">Amount</th>
+                <th className="p-3 border font-bold text-red-500">Charges</th>
+                <th className="p-3 border font-bold text-green-600">Pay Amount</th>
+                <th className="p-3 border text-center">Date</th>
                 <th className="p-3 border text-center">Action</th>
               </tr>
             </thead>
@@ -186,48 +191,43 @@ export default function CandFPendingPage() {
                       onChange={() => handleCheckboxChange(item.dsid)}
                     />
                   </td>
-                  <td className="p-3 border">{item.dsid}</td>
-                  <td className="p-3 border font-medium">{item.name}</td>
-                  <td className="p-3 border text-center">{item.lastmatchpoint || 0}</td>
-                  <td className="p-3 border text-center text-blue-600 font-semibold">{item.usepoint || 0}</td>
-                  <td className="p-3 border font-bold text-green-700">₹{item.payamount}</td>
-                  <td className="p-3 border">{item.date}</td>
+                  <td className="p-3 border font-semibold">{item.dsid}</td>
+                  <td className="p-3 border font-semibold">{item.name || '—'}</td>
+                  <td className="p-3 border">{item.acnumber || '—'}</td>
+                  <td className="p-3 border">{item.ifscCode || '—'}</td>
+                  <td className="p-3 border">{item.bankName || '—'}</td>
+
+                  <td className="p-3 border text-center">{item.lastmatchpoint || '0'}</td>
+                  <td className="p-3 border text-center font-bold text-blue-600">{item.usepoint || '0'}</td>
+                  <td className="p-3 border font-bold text-gray-600">₹{item.amount || '0'}</td>
+                  <td className="p-3 border font-bold text-red-500">₹{item.charges || '0'}</td>
+                  <td className="p-3 border font-bold text-green-600">₹{item.payamount || '0'}</td>
+
+                  <td className="p-3 border text-center">
+                    {item.date ? new Date(item.date).toLocaleDateString('en-IN', {
+                      day: '2-digit', month: 'short', year: 'numeric'
+                    }) : '—'}
+                  </td>
                   <td className="p-3 border">
                     <div className='flex flex-col gap-2'>
-                        <div className='flex gap-2'>
-                            <input
-                                type="text"
-                                placeholder="UTR"
-                                value={item.successInput || ''}
-                                onChange={(e) => {
-                                    const newData = [...data];
-                                    newData[index].successInput = e.target.value;
-                                    setData(newData);
-                                }}
-                                className="border rounded px-2 py-1 text-sm w-32"
-                            />
-                            <button
-                                onClick={() => handleSuccess(item._id, item.successInput)}
-                                className="bg-green-600 text-white px-3 py-1 rounded text-xs font-bold"
-                            >Success</button>
-                        </div>
-                        <div className='flex gap-2'>
-                            <input
-                                type="text"
-                                placeholder="Reason"
-                                value={item.invalidInput || ''}
-                                onChange={(e) => {
-                                    const newData = [...data];
-                                    newData[index].invalidInput = e.target.value;
-                                    setData(newData);
-                                }}
-                                className="border rounded px-2 py-1 text-sm w-32"
-                            />
-                            <button
-                                onClick={() => handleInvalid(item._id, item.invalidInput)}
-                                className="bg-red-600 text-white px-3 py-1 rounded text-xs font-bold"
-                            >Invalid</button>
-                        </div>
+                      <div className='flex gap-2'>
+                        <input
+                          type="text"
+                          placeholder="UTR"
+                          value={item.successInput || ''}
+                          onChange={(e) => {
+                            const newData = [...data];
+                            newData[index].successInput = e.target.value;
+                            setData(newData);
+                          }}
+                          className="border rounded px-2 py-1 text-sm w-32"
+                        />
+                        <button
+                          onClick={() => handleSuccess(item._id, item.successInput)}
+                          className="bg-green-600 text-white px-3 py-1 rounded text-xs font-bold"
+                        >Success</button>
+                      </div>
+
                     </div>
                   </td>
                 </tr>

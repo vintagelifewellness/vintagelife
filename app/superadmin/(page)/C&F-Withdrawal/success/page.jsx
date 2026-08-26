@@ -26,7 +26,7 @@ export default function CandFSuccessReport() {
       if (fromDate) params.append('from', fromDate);
       if (toDate) params.append('to', toDate);
 
-    
+
       const res = await fetch(`/api/candf/get-candf-points-closing?${params}`);
       const result = await res.json();
       if (result.success) {
@@ -60,7 +60,7 @@ export default function CandFSuccessReport() {
       'Last Month Points': item.lastmatchpoint, // C&F specific
       'Used Points': item.usepoint,             // C&F specific
       'Paid Amount': item.payamount,
-      'Approve Date': item.statusapprovedate ? new Date(item.statusapprovedate).toLocaleDateString() : '—',
+      'Approve Date': item.updatedAt,
       UTR: item.utr
     }))
 
@@ -92,40 +92,40 @@ export default function CandFSuccessReport() {
 
       <div className="flex flex-wrap gap-4 justify-between items-end">
         <div className="flex gap-4">
-            <input
+          <input
             type="text"
             placeholder="Filter by DSID"
             className="px-3 py-2 border rounded"
             value={dsidFilter}
             onChange={(e) => {
-                setCurrentPage(1)
-                setDsidFilter(e.target.value)
+              setCurrentPage(1)
+              setDsidFilter(e.target.value)
             }}
-            />
+          />
 
-            <DatePicker
+          <DatePicker
             selected={fromDate ? new Date(fromDate) : null}
             onChange={(date) => {
-                setFromDate(date ? date.toISOString().split('T')[0] : '')
-                setCurrentPage(1)
+              setFromDate(date ? date.toISOString().split('T')[0] : '')
+              setCurrentPage(1)
             }}
             placeholderText="From Date"
             className="px-3 py-2 border rounded"
             dateFormat="yyyy-MM-dd"
             isClearable
-            />
+          />
 
-            <DatePicker
+          <DatePicker
             selected={toDate ? new Date(toDate) : null}
             onChange={(date) => {
-                setToDate(date ? date.toISOString().split('T')[0] : '')
-                setCurrentPage(1)
+              setToDate(date ? date.toISOString().split('T')[0] : '')
+              setCurrentPage(1)
             }}
             placeholderText="To Date"
             className="px-3 py-2 border rounded"
             dateFormat="yyyy-MM-dd"
             isClearable
-            />
+          />
         </div>
 
         <button
@@ -178,8 +178,8 @@ export default function CandFSuccessReport() {
                   <td className="p-3 border text-center font-bold text-blue-600">{item.usepoint || 0}</td>
                   <td className="p-3 border font-bold text-green-700">₹{item.payamount}</td>
                   <td className="p-3 border text-center">
-                    {item.statusapprovedate
-                      ? new Date(item.statusapprovedate).toLocaleDateString('en-IN', {
+                    {item.updatedAt
+                      ? new Date(item.updatedAt).toLocaleDateString('en-IN', {
                         day: '2-digit',
                         month: 'short',
                         year: 'numeric',
