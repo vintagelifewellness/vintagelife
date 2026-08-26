@@ -77,7 +77,7 @@ export default function Page() {
                 setData({
                     totalUsers: 0, activeUsers: 0, pendingUsers: 0, suspendedUsers: 0,
                     todayRegistrations: 0, todayGreen: 0, successWithdrawals: 0,
-                    pendingWithdrawals: 0, pendingCount: 0, successWithdrawalstravel: 0, pendingWithdrawalstravel: 0, pendingCounttravel: 0,
+                    pendingWithdrawals: 0, pendingCount: 0, successWithdrawalstravel: 0, pendingWithdrawalstravel: 0, pendingCounttravel: 0, successWithdrawalsCandF: 0, pendingWithdrawalsCandF: 0,
                     successWithdrawalsMonthly: 0, pendingWithdrawalsMonthly: 0, pendingCountMonthly: 0,
                 });
             } finally {
@@ -200,6 +200,21 @@ export default function Page() {
             dataKey: "pendingCounttravel",
             Icon: ClipboardList,
             color: "text-fuchsia-600",
+        },
+
+        {
+            title: "Pending Amount (C&F Fund)",
+            dataKey: "pendingWithdrawalsCandF",
+            href: "/superadmin/C&F-Withdrawal/pending",
+            Icon: BadgeIndianRupee,
+            color: "text-yellow-600",
+        },
+        {
+            title: "Success Amount (C&F Fund)",
+            dataKey: "successWithdrawalsCandF",
+            href: "/superadmin/C&F-Withdrawal/success",
+            Icon: BadgeIndianRupee,
+            color: "text-green-600",
         },
     ];
 

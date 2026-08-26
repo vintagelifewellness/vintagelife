@@ -3,6 +3,7 @@ import UserModel from "@/model/User";
 import ClosingHistoryModel from "@/model/ClosingHistory";
 import TravelfundModel from "@/model/travelfund";
 import MonthlyClosingHistoryModel from "@/model/MonthleClosingHistory";
+import CandFHistoryModel from "@/model/C&FClosingHistory";
 export async function POST(req) {
     await dbConnect();
 
@@ -146,6 +147,24 @@ export async function POST(req) {
         const successWithdrawalsMonthly = successWithdrawalsMonthlyAgg[0]?.total || 0;
         const pendingWithdrawalsMonthly = pendingWithdrawalsMonthlyAgg[0]?.total || 0;
 
+
+        const successWithdrawalsCandFAgg = await CandFHistoryModel.aggregate([
+            { $match: { status: true } },
+            { $group: { _id: null, total: { $sum: { $toDouble: "$payamount" } } } },
+        ]);
+
+        const pendingWithdrawalsCandFAgg = await CandFHistoryModel.aggregate([
+            { $match: { status: false } },
+            { $group: { _id: null, total: { $sum: { $toDouble: "$payamount" } } } },
+        ]);
+
+        const pendingCountCandF = await CandFHistoryModel.countDocuments({
+            status: false,
+            invalidstatus: false,
+        });
+
+        const successWithdrawalsCandF = successWithdrawalsCandFAgg[0]?.total || 0;
+        const pendingWithdrawalsCandF = pendingWithdrawalsCandFAgg[0]?.total || 0;
         return Response.json({
             totalUsers,
             activeUsers,
@@ -164,6 +183,9 @@ export async function POST(req) {
             successWithdrawalsMonthly,
             pendingWithdrawalsMonthly,
             pendingCountMonthly,
+            successWithdrawalsCandF,
+            pendingWithdrawalsCandF,
+            pendingCountCandF,
         });
     } catch (error) {
         console.error("Error getting stats:", error);
