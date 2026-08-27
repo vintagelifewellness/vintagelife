@@ -5,17 +5,18 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Cnforder from "@/components/Cnforder/Order";
 import Link from "next/link";
+import CnfStock from '@/components/CnfStock'
 
 export default function CandFProfile() {
   const { id } = useParams();
   const decodedId = decodeURIComponent(id);
   const router = useRouter();
-  
+  const [showStockModal, setShowStockModal] = useState(false);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  
+
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
 
@@ -24,10 +25,10 @@ export default function CandFProfile() {
     if (!candfId) return;
     setOrdersLoading(true);
     try {
-     
+
       const res = await axios.get(`/api/candf/getOrdersByUser?dscode=${candfId}`);
       if (res.data.success === false) {
-        setOrders([]); 
+        setOrders([]);
       } else {
         setOrders(res.data.data || []);
       }
@@ -39,7 +40,7 @@ export default function CandFProfile() {
     }
   }, []);
 
- 
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -48,8 +49,8 @@ export default function CandFProfile() {
         const response = await axios.get(`/api/candf/find-by-email/${decodedId}`);
         const user = response.data;
         setUserData(user);
-        
-       
+
+
         if (user && user._id) {
           handleOrders(user._id);
         }
@@ -59,7 +60,7 @@ export default function CandFProfile() {
         setLoading(false);
       }
     };
-    
+
     if (decodedId) {
       fetchData();
     }
@@ -70,14 +71,14 @@ export default function CandFProfile() {
     const isFrozen = userData.defaultdata === "freeze";
     const confirmAction = confirm(isFrozen ? "Unfreeze this C&F account?" : "Freeze this C&F account?");
     if (!confirmAction) return;
-    
+
     try {
       await axios.patch("/api/candf/update-candf", { id: userData._id, defaultdata: isFrozen ? "user" : "freeze" });
       setSuccess(`Account ${isFrozen ? "unfrozen" : "frozen"} successfully.`);
       setUserData(prev => ({ ...prev, defaultdata: isFrozen ? "user" : "freeze" }));
-      setTimeout(() => setSuccess(null), 3000); 
-    } catch (error) { 
-      setError("Failed to update freeze status."); 
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (error) {
+      setError("Failed to update freeze status.");
     }
   };
 
@@ -86,14 +87,14 @@ export default function CandFProfile() {
     const isBlocked = userData.defaultdata === "block";
     const confirmAction = confirm(isBlocked ? "Unblock this C&F account?" : "Block this C&F account?");
     if (!confirmAction) return;
-    
+
     try {
       await axios.patch("/api/candf/update-candf", { id: userData._id, defaultdata: isBlocked ? "user" : "block" });
       setSuccess(`Account ${isBlocked ? "unblocked" : "blocked"} successfully.`);
       setUserData(prev => ({ ...prev, defaultdata: isBlocked ? "user" : "block" }));
       setTimeout(() => setSuccess(null), 3000);
-    } catch (error) { 
-      setError("Failed to update block status."); 
+    } catch (error) {
+      setError("Failed to update block status.");
     }
   };
 
@@ -106,50 +107,158 @@ export default function CandFProfile() {
       {success && <p className="text-center text-green-500 font-semibold bg-green-50 py-2 rounded mb-4">{success}</p>}
 
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-center gap-6 border-b pb-6 mb-6">
-        <div className="flex justify-center items-center w-full md:w-auto">
-          <Image
-            src={userData.image || "/images/user/icon-5359553_640.webp"}
-            alt="Profile" width={200} height={200}
-            className="w-24 h-24 md:w-28 md:h-28 rounded-full border-2 border-gray-200 dark:border-gray-700 object-cover shadow-lg"
-          />
-        </div>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 md:p-6 mb-6">
 
-        <div className="flex-1 w-full bg-white dark:bg-gray-800 rounded-2xl p-4 md:p-6 shadow-sm border dark:border-gray-700">
-          <div className="mb-6 text-center md:text-left">
-            <h4 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              {userData?.cfName || userData?.companyName || "Unknown C&F"}
-            </h4>
+        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
 
-            <div className="flex flex-wrap justify-center md:justify-start gap-3">
-              <div className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 px-4 py-2 rounded-xl font-semibold shadow text-sm">
-                Available Point: <span className="font-bold">{userData?.Availablepoint || 0}</span>
-              </div>
-              <div className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 px-4 py-2 rounded-xl font-semibold shadow text-sm">
-                Use Point: <span className="font-bold">{userData?.Usepoint || 0}</span>
-              </div>
+          {/* Profile Image */}
+          <div className="shrink-0">
+            <div className="relative">
+              <Image
+                src={userData.image || "/images/user/icon-5359553_640.webp"}
+                alt="Profile"
+                width={200}
+                height={200}
+                className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white dark:border-gray-800 ring-2 ring-blue-100 dark:ring-blue-900 object-cover shadow-md"
+              />
+
+              {/* Active Dot */}
+              <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-            <div className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-4 py-2 rounded-xl font-medium shadow text-center flex items-center justify-center">
-              DsId: {userData?.dscode}
+
+          {/* Main Information */}
+          <div className="flex-1 w-full text-center lg:text-left">
+
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+
+              {/* Name + Points */}
+              <div>
+
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1">
+                  C&F Profile
+                </p>
+
+                <h4 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                  {userData?.cfName ||
+                    userData?.companyName ||
+                    "Unknown C&F"}
+                </h4>
+
+                {/* Ds ID */}
+                <div className="mt-2 flex items-center justify-center lg:justify-start gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span className="font-medium">DS ID:</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-200">
+                    {userData?.dscode || "-"}
+                  </span>
+                </div>
+
+                {/* Points */}
+                <div className="flex flex-wrap justify-center lg:justify-start gap-3 mt-5">
+
+                  <div className="px-4 py-2.5 rounded-xl bg-purple-50 dark:bg-purple-900/30 border border-purple-100 dark:border-purple-800">
+                    <p className="text-xs text-purple-500 dark:text-purple-300 font-medium">
+                      Available Point
+                    </p>
+
+                    <p className="text-lg font-bold text-purple-700 dark:text-purple-200">
+                      {userData?.Availablepoint || 0}
+                    </p>
+                  </div>
+
+                  <div className="px-4 py-2.5 rounded-xl bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-100 dark:border-yellow-800">
+                    <p className="text-xs text-yellow-600 dark:text-yellow-300 font-medium">
+                      Used Point
+                    </p>
+
+                    <p className="text-lg font-bold text-yellow-700 dark:text-yellow-200">
+                      {userData?.Usepoint || 0}
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+
+
+              {/* Actions */}
+              <div className="flex flex-col sm:flex-row lg:flex-col gap-2 w-full sm:w-auto lg:min-w-[190px]">
+
+                <Link
+                  href={`../C&fEdit/${userData.email}`}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200"
+                >
+                  <span>⚙️</span>
+                  Manage Points
+                </Link>
+
+                <Link
+                  href={`../C&fEditdetails/${userData.email}`}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-sm font-semibold rounded-xl border border-blue-200 dark:border-blue-800 transition-all duration-200"
+                >
+                  <span>✏️</span>
+                  Edit C&F Details
+                </Link>
+                <button
+                  onClick={() => setShowStockModal(true)}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200"
+                >
+                  <span>📦</span>
+                  Check Stock
+                </button>
+              </div>
+              {showStockModal && (
+                <div
+                  className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4"
+                  onClick={() => setShowStockModal(false)}
+                >
+                  <div
+                    className="relative w-full max-w-5xl h-[90vh] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+
+                    {/* Modal Header - Fixed */}
+                    <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                          C&F Stock
+                        </h2>
+
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          DS ID: {userData?.dscode}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => setShowStockModal(false)}
+                        className="w-9 h-9 shrink-0 flex items-center justify-center rounded-full bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-red-900/40 transition"
+                      >
+                        ✕
+                      </button>
+
+                    </div>
+
+                    {/* Scrollable Content */}
+                    <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 md:p-6">
+
+                      <CnfStock dscode={userData?.dscode} />
+
+                    </div>
+
+                  </div>
+                </div>
+              )}
             </div>
 
-            <Link href={`../C&fEdit/${userData.email}`} className="flex justify-center items-center px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-md no-underline transition-all duration-300">
-                Manage Points / Active Self
-            </Link>
-            
-            <Link href={`../C&fEditdetails/${userData.email}`} className="flex justify-center items-center px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold rounded-lg shadow-sm no-underline border border-blue-300">
-                Edit C&F details
-            </Link>
           </div>
+
         </div>
+
       </div>
-
       <Section title={`Orders Received by C&F (${orders.length})`}>
         <div className="flex justify-end mb-3">
-          <button 
+          <button
             onClick={() => handleOrders(userData?._id)}
             disabled={ordersLoading}
             className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition border dark:border-gray-600 disabled:opacity-50"
@@ -157,7 +266,7 @@ export default function CandFProfile() {
             {ordersLoading ? "Refreshing..." : "Refresh Orders"}
           </button>
         </div>
-        
+
         <div className="overflow-x-auto border rounded-lg p-2 bg-white dark:bg-gray-900 min-h-[100px]">
           {ordersLoading ? (
             <div className="flex justify-center items-center py-6">
@@ -165,13 +274,13 @@ export default function CandFProfile() {
             </div>
           ) : (
             <>
-              
+
               <Cnforder id={userData?._id} orders={orders} />
-              
-             
+
+
               {orders.length === 0 && (
                 <p className="text-center py-6 text-gray-500 italic">
-                No orders found for this C&F yet
+                  No orders found for this C&F yet
                 </p>
               )}
             </>
@@ -199,7 +308,7 @@ export default function CandFProfile() {
           <p className="text-gray-600 dark:text-gray-200 font-bold">{userData.address?.city}, {userData.address?.state} - {userData.address?.pinCode}</p>
         </div>
       </Section>
-      
+
       <Section title="Bank Details">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="grid grid-cols-1 gap-4">
@@ -211,15 +320,15 @@ export default function CandFProfile() {
         </div>
       </Section>
 
- <Section title="Uploaded Documents">
+      <Section title="Uploaded Documents">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <InfoCard 
-            label="PAN Card Number" 
-            value={userData?.panno || userData?.panNumber || "Not Available"} 
+          <InfoCard
+            label="PAN Card Number"
+            value={userData?.panno || userData?.panNumber || "Not Available"}
           />
-          <InfoCard 
-            label="Aadhar Card Number" 
-            value={userData?.aadharno || userData?.aadharNumber || "Not Available"} 
+          <InfoCard
+            label="Aadhar Card Number"
+            value={userData?.aadharno || userData?.aadharNumber || "Not Available"}
           />
         </div>
       </Section>

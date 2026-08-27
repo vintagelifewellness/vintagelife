@@ -5,7 +5,7 @@ import UserModel from "@/model/User";
 import PaymentHistoryModel from "@/model/PaymentHistory";
 import CnfModel from "@/model/c&fusers";
 import PointHistoryModel from "@/model/PointHistory";
-
+import CnfStockModel from "@/model/cnfstock";
 export async function PATCH(req) {
     await dbConnect();
 
@@ -45,6 +45,113 @@ export async function PATCH(req) {
             // 🔥 C&F USER POINT DEDUCTION & HISTORY (INTEGRATED) 🔥
             // =========================================================
             if (data.status === true && !data.cancelled) {
+                if (updatedOrder.cfId) {
+
+                    const cfUser = await CnfModel
+                        .findById(updatedOrder.cfId)
+                        .session(session);
+
+                    if (!cfUser) {
+                        await session.abortTransaction();
+                        session.endSession();
+
+                        return Response.json({
+                            success: false,
+                            message: "C&F User not found!"
+                        }, { status: 404 });
+                    }
+
+                    const cnfStock = await CnfStockModel.findOne({
+                        dscode: cfUser.dscode
+                    }).session(session);
+
+                    if (!cnfStock) {
+                        await session.abortTransaction();
+                        session.endSession();
+
+                        return Response.json({
+                            success: false,
+                            message: "C&F stock not found!"
+                        }, { status: 404 });
+                    }
+
+                    // Order ke products
+                    const orderItems = updatedOrder.productDetails || [];
+
+                    if (orderItems.length === 0) {
+                        await session.abortTransaction();
+                        session.endSession();
+
+                        return Response.json({
+                            success: false,
+                            message: "No products found in this order!"
+                        }, { status: 400 });
+                    }
+
+                    // =========================================================
+                    // FIRST CHECK ALL STOCK
+                    // =========================================================
+
+                    for (const item of orderItems) {
+
+                        // product = product name
+                        const productName = item.product;
+
+                        // quantity = required quantity
+                        const requiredQty = Number(item.quantity || 0);
+
+                        const stockProduct =
+                            cnfStock.productDetails.find(
+                                (p) => p.product === productName
+                            );
+
+                        if (!stockProduct) {
+                            await session.abortTransaction();
+                            session.endSession();
+
+                            return Response.json({
+                                success: false,
+                                message: `${productName} is not available in C&F stock`
+                            }, { status: 400 });
+                        }
+
+                        const availableQty =
+                            Number(stockProduct.quantity || 0);
+
+                        if (availableQty < requiredQty) {
+                            await session.abortTransaction();
+                            session.endSession();
+
+                            return Response.json({
+                                success: false,
+                                message: `${productName} has insufficient C&F stock. Available: ${availableQty}, Required: ${requiredQty}`
+                            }, { status: 400 });
+                        }
+                    }
+
+                    // =========================================================
+                    // DEDUCT C&F STOCK
+                    // =========================================================
+
+                    for (const item of orderItems) {
+
+                        const productName = item.product;
+                        const requiredQty = Number(item.quantity || 0);
+
+                        const stockProduct =
+                            cnfStock.productDetails.find(
+                                (p) => p.product === productName
+                            );
+
+                        const availableQty =
+                            Number(stockProduct.quantity || 0);
+
+                        stockProduct.quantity =
+                            (availableQty - requiredQty).toString();
+                    }
+
+                    await cnfStock.save({ session });
+                }
                 if (updatedOrder.cfId) {
                     const cfUser = await CnfModel.findById(updatedOrder.cfId).session(session);
 

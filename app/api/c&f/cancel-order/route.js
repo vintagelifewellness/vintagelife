@@ -6,7 +6,7 @@ import PointHistory from "@/model/PointHistory";
 import OrderModel from "@/model/Order";
 import UserModel from "@/model/User";
 import PaymentHistoryModel from "@/model/PaymentHistory";
-
+import CnfStockModel from "@/model/cnfstock";
 export async function PATCH(request) {
     await dbConnect();
 
@@ -211,7 +211,92 @@ export async function PATCH(request) {
                     levelCounter++;
                 }
             }
+if (order.cfId) {
 
+    const cnfStock = await CnfStockModel.findOne({
+        dscode: cnfUser.dscode
+    }).session(session);
+
+    if (!cnfStock) {
+        await session.abortTransaction();
+        session.endSession();
+
+        return NextResponse.json({
+            success: false,
+            message: "C&F stock not found. Cancellation failed."
+        }, { status: 404 });
+    }
+
+    const orderItems = order.productDetails || [];
+
+    if (orderItems.length === 0) {
+        await session.abortTransaction();
+        session.endSession();
+
+        return NextResponse.json({
+            success: false,
+            message: "No products found in this order."
+        }, { status: 400 });
+    }
+
+    // ==========================================
+    // CHECK ALL PRODUCTS EXIST IN C&F STOCK
+    // ==========================================
+
+    for (const item of orderItems) {
+
+        const productName = item.product;
+        const returnQty = Number(item.quantity || 0);
+
+        const stockProduct = cnfStock.productDetails.find(
+            (p) => p.product === productName
+        );
+
+        if (!stockProduct) {
+            await session.abortTransaction();
+            session.endSession();
+
+            return NextResponse.json({
+                success: false,
+                message: `${productName} not found in C&F stock. Cancellation failed.`
+            }, { status: 400 });
+        }
+
+        if (returnQty <= 0) {
+            await session.abortTransaction();
+            session.endSession();
+
+            return NextResponse.json({
+                success: false,
+                message: `Invalid quantity for ${productName}`
+            }, { status: 400 });
+        }
+    }
+
+    // ==========================================
+    // RETURN STOCK
+    // ==========================================
+
+    for (const item of orderItems) {
+
+        const productName = item.product;
+        const returnQty = Number(item.quantity || 0);
+
+        const stockProduct = cnfStock.productDetails.find(
+            (p) => p.product === productName
+        );
+
+        const currentStock = Number(
+            stockProduct.quantity || 0
+        );
+
+        stockProduct.quantity = (
+            currentStock + returnQty
+        ).toString();
+    }
+
+    await cnfStock.save({ session });
+}
             // =========================================================
             // 6. Update Order Status
             // =========================================================

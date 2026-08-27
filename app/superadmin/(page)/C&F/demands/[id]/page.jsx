@@ -4,12 +4,14 @@ import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 
 export default function DemandDetailsPage() {
-    const params = useParams(); 
-    const router = useRouter(); 
+    const params = useParams();
+    const router = useRouter();
     const [demand, setDemand] = useState(null);
     const [loading, setLoading] = useState(true);
     const [approving, setApproving] = useState(false);
-
+    const handlePrint = () => {
+        window.print();
+    };
     useEffect(() => {
         const fetchSingleDemand = async () => {
             try {
@@ -27,25 +29,40 @@ export default function DemandDetailsPage() {
     }, [params.id]);
 
     // Approve Karne ka function
-    const handleApprove = async () => {
-        const confirmApprove = window.confirm("Are you sure you want to approve this demand?");
-        if (!confirmApprove) return;
+const handleApprove = async () => {
+    const confirmApprove = window.confirm(
+        "Are you sure you want to approve this demand?"
+    );
 
-        setApproving(true);
-        try {
-            const response = await axios.patch(`/api/c&f/get-demands/${params.id}`, {
+    if (!confirmApprove) return;
+
+    setApproving(true);
+
+    try {
+        const response = await axios.patch(
+            `/api/c&f/get-demands/${params.id}`,
+            {
                 status: "Approved"
-            });
-            if (response.data.success) {
-                alert("Demand successfully approved.");
-                setDemand(response.data.data); // Status turant update dikhane ke liye
             }
-        } catch (error) {
-            alert("Error occurred while approving the demand.");
-        } finally {
-            setApproving(false);
+        );
+
+        if (response.data.success) {
+            alert("Demand successfully approved.");
+            setDemand(response.data.data);
+        } else {
+            alert(response.data.message || "Failed to approve demand.");
         }
-    };
+
+    } catch (error) {
+        const message =
+            error.response?.data?.message ||
+            "Error occurred while approving the demand.";
+
+        alert(message);
+    } finally {
+        setApproving(false);
+    }
+};
 
     if (loading) return <div className="p-10 text-center font-bold text-blue-600">Loading Details...</div>;
     if (!demand) return <div className="p-10 text-center font-bold text-red-600">Demand nahi mili!</div>;
@@ -54,20 +71,34 @@ export default function DemandDetailsPage() {
         <div className="p-6 md:p-8 bg-gray-50 min-h-screen">
             <div className="max-w-5xl mx-auto">
                 {/* Back Button */}
-                <button onClick={() => router.back()} className="mb-6 text-blue-600 font-bold hover:underline flex items-center gap-1">
-                    ← Back to Demands
-                </button>
+                <div className="mb-6 flex items-center justify-between">
+                    <button
+                        onClick={() => router.back()}
+                        className="text-blue-600 font-bold hover:underline flex items-center gap-1 print:hidden"
+                    >
+                        ← Back to Demands
+                    </button>
 
-                <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
+                    <button
+                        onClick={handlePrint}
+                        className="print:hidden px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
+                    >
+                        🖨️ Print Demand
+                    </button>
+                </div>
+
+                <div
+                    id="print-area"
+                    className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200 print:shadow-none print:border-none print:rounded-none"
+                >
                     {/* Header */}
                     <div className="bg-slate-800 p-6 text-white flex justify-between items-center flex-wrap gap-4">
                         <div>
                             <h2 className="text-2xl font-black">Demand Details</h2>
                             <p className="text-slate-400 mt-1">ID: {demand._id}</p>
                         </div>
-                        <span className={`px-4 py-1.5 rounded-lg text-sm font-black uppercase tracking-widest ${
-                            demand.status === 'Pending' ? 'bg-yellow-500 text-yellow-900' : 'bg-green-500 text-white'
-                        }`}>
+                        <span className={`px-4 py-1.5 rounded-lg text-sm font-black uppercase tracking-widest ${demand.status === 'Pending' ? 'bg-yellow-500 text-yellow-900' : 'bg-green-500 text-white'
+                            }`}>
                             {demand.status}
                         </span>
                     </div>
@@ -122,7 +153,7 @@ export default function DemandDetailsPage() {
                     </div>
 
                     {/* Grand Total & Action Buttons */}
-                    <div className="p-6 bg-slate-50 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-gray-200">
+                 <div className="p-6 bg-slate-50 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-gray-200  ">
                         <div className="flex gap-8">
                             <div>
                                 <p className="text-xs text-slate-500 font-bold uppercase">Grand Total Price</p>
@@ -136,12 +167,11 @@ export default function DemandDetailsPage() {
 
                         {/* APPROVE BUTTON */}
                         {demand.status === "Pending" ? (
-                            <button 
+                            <button
                                 onClick={handleApprove}
                                 disabled={approving}
-                                className={`px-8 py-3 rounded-xl font-black text-white text-lg shadow-lg transition-all ${
-                                    approving ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-400 hover:-translate-y-1'
-                                }`}
+                                className={`px-8 py-3 rounded-xl font-black text-white text-lg shadow-lg transition-all ${approving ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-400 hover:-translate-y-1'
+                                    }`}
                             >
                                 {approving ? "Approving..." : "✅ Approve Demand"}
                             </button>
@@ -153,6 +183,93 @@ export default function DemandDetailsPage() {
                     </div>
                 </div>
             </div>
+            <style jsx global>{`
+    @media print {
+        @page {
+            size: A4;
+            margin: 12mm;
+        }
+
+        html,
+        body {
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        body * {
+            visibility: hidden;
+        }
+
+        #print-area,
+        #print-area * {
+            visibility: visible;
+        }
+
+        #print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+        }
+
+        .print\\:hidden {
+            display: none !important;
+        }
+
+        table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+        }
+
+        th,
+        td {
+            border: 1px solid #d1d5db !important;
+            padding: 8px !important;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        .bg-slate-800 {
+            background: #1e293b !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .bg-gray-100 {
+            background: #f3f4f6 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .text-blue-600 {
+            color: #2563eb !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .text-green-600 {
+            color: #16a34a !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .text-white {
+            color: white !important;
+        }
+    }
+`}</style>
         </div>
     );
 }
