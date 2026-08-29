@@ -9,17 +9,22 @@ export default function Page() {
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [dscode, setDscode] = useState("");
+    
+    // Advanced filter states
+    const [searchField, setSearchField] = useState("dscode");
+    const [searchValue, setSearchValue] = useState("");
     const [date, setDate] = useState("");
 
-    const fetchData = async () => {
+    const fetchData = async (currentPage = page) => {
         setLoading(true);
         try {
             const response = await axios.get("/api/user/fetch/user", {
                 params: {
-                    page,
+                    page: currentPage,
                     limit: 20,
-                    dscode: dscode || undefined,
+                    // Send exactly what the backend expects
+                    searchField: searchValue ? searchField : undefined,
+                    searchValue: searchValue || undefined,
                     date: date || undefined,
                 },
             });
@@ -34,40 +39,52 @@ export default function Page() {
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData(page);
     }, [page]);
 
     const handleFilter = () => {
-        setPage(1);
-        fetchData();
+        if (page !== 1) {
+            setPage(1); // Changing page will trigger useEffect
+        } else {
+            fetchData(1); // If already on page 1, fetch manually
+        }
     };
 
     const handleClear = () => {
-        setDscode("");
-        setDate("");
-        setPage(1);
-        fetchData();
+         window.location.reload();
     };
 
     return (
-        <div className="p-4 sm:p-6 max-w-7xl mx-auto  textb">
+        <div className="p-4 sm:p-6 max-w-7xl mx-auto textb">
             <h2 className="text-3xl font-bold text-center mb-6 textn">User Report</h2>
 
-            {/* Filters */}
+            {/* Advanced Filters */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <select
+                    value={searchField}
+                    onChange={(e) => setSearchField(e.target.value)}
+                    className="px-4 py-2 rounded-md bordernormal bg-white textb focus:outline-none focus:ring-2 focus:ring-color-navy"
+                >
+                    <option value="dscode">DS Code</option>
+                    <option value="name">Name</option>
+                    <option value="email">Email</option>
+                </select>
+                
                 <input
                     type="text"
-                    placeholder="Search by DS Code"
-                    value={dscode}
-                    onChange={(e) => setDscode(e.target.value)}
-                    className="px-4 py-2 rounded-md bordernormal bg-white textb focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-navy"
+                    placeholder={`Search by ${searchField.toUpperCase()}`}
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                    className="flex-1 px-4 py-2 rounded-md bordernormal bg-white textb focus:outline-none focus:ring-2 focus:ring-color-navy"
                 />
+                
                 <input
                     type="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="px-4 py-2 rounded-md bordernormal bg-white textb focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-navy"
+                    className="px-4 py-2 rounded-md bordernormal bg-white textb focus:outline-none focus:ring-2 focus:ring-color-navy"
                 />
+                
                 <button
                     onClick={handleFilter}
                     className="bgn textw px-4 py-2 rounded-md font-semibold hbgb"
@@ -78,7 +95,7 @@ export default function Page() {
                     onClick={handleClear}
                     className="bgg textn px-4 py-2 rounded-md font-semibold hbgb"
                 >
-                    Remove Filter
+                    Clear
                 </button>
             </div>
 
@@ -118,7 +135,7 @@ export default function Page() {
                                             <td className="px-4 py-3 textn">{user.group}</td>
                                             <td className="py-3 px-4 textb">{user.level || "N/A"}</td>
                                             <td className="py-3 px-4 textb">{user.activesp || "N/A"}</td>
-                                            <td className="py-3 px-4 font-semibold">{user.kycVerification.isVerified ? "Verified" : "Not Verified"}</td>
+                                            <td className="py-3 px-4 font-semibold">{user.kycVerification?.isVerified ? "Verified" : "Not Verified"}</td>
                                             <td className={`px-4 py-3 font-bold ${user.usertype === "1" ? "text-green-700" : "text-red-700"}`}>
                                                 {user.usertype === "1" ? "Active" : "Inactive"}
                                             </td>
@@ -129,31 +146,22 @@ export default function Page() {
                                         </tr>
                                         <tr className={`${index % 2 === 0 ? "bgw" : "bgg"}`}>
                                             <td colSpan="10" className="px-4 pb-3 text-right space-x-4">
-                                                <Link href={`/superadmin/Report/allreport/${user.dscode}`} className="textn font-semibold hover:underline">
-                                                    All Report
-                                                </Link>
-                                                <Link href={`/superadmin/Report/UserReportcom/${user.dscode}`} className="textn font-semibold hover:underline">
-                                                    Order Report
-                                                </Link>
-                                                <Link href={`/superadmin/Report/UserReportChain/${user.dscode}`} className="textn font-semibold hover:underline">
-                                                    Chain Report
-                                                </Link>
+                                                <Link href={`/superadmin/Report/allreport/${user.dscode}`} className="textn font-semibold hover:underline">All Report</Link>
+                                                <Link href={`/superadmin/Report/UserReportcom/${user.dscode}`} className="textn font-semibold hover:underline">Order Report</Link>
+                                                <Link href={`/superadmin/Report/UserReportChain/${user.dscode}`} className="textn font-semibold hover:underline">Chain Report</Link>
                                             </td>
                                         </tr>
                                     </Fragment>
                                 ))}
                                 {data.length === 0 && (
                                     <tr>
-                                        <td colSpan="10" className="text-center py-8 textb font-medium">
-                                            No users found.
-                                        </td>
+                                        <td colSpan="10" className="text-center py-8 textb font-medium">No users found.</td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
 
-                    {/* Pagination */}
                     <div className="flex justify-center items-center mt-8 gap-4">
                         <button
                             onClick={() => setPage((p) => Math.max(p - 1, 1))}
@@ -165,7 +173,7 @@ export default function Page() {
                         <span className="font-bold textn">{`Page ${page} of ${totalPages}`}</span>
                         <button
                             onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-                            disabled={page === totalPages}
+                            disabled={page === totalPages || totalPages === 0}
                             className="bgn textw px-4 py-2 rounded-md font-semibold hbgb disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Next

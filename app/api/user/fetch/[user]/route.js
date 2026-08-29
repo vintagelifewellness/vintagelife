@@ -8,7 +8,6 @@ export const GET = async (request) => {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
     
-    // NEW: Get the dynamic search field and value
     const searchField = searchParams.get("searchField");
     const searchValue = searchParams.get("searchValue");
     const date = searchParams.get("date");
@@ -18,18 +17,19 @@ export const GET = async (request) => {
         usertype: { $ne: 2 },
     };
 
-    // NEW: Dynamically build the filter object
-    // It will add the search condition only if both field and value are provided.
+    // Advanced search logic
     if (searchField && searchValue) {
-        // Use a case-insensitive regular expression for searching
+        // Only apply regex if both are valid
         filter[searchField] = { $regex: searchValue, $options: 'i' };
     }
     
-    // The date filter remains the same
+    // Exact date filtering logic
     if (date) {
         const dateStart = new Date(date);
         const dateEnd = new Date(date);
         dateEnd.setDate(dateEnd.getDate() + 1);
+        
+        // This targets everything that happened from 00:00:00 to 23:59:59 on the selected date
         filter.createdAt = { $gte: dateStart, $lt: dateEnd };
     }
 
@@ -48,7 +48,7 @@ export const GET = async (request) => {
                 data,
                 total,
                 currentPage: page,
-                totalPages: Math.ceil(total / limit),
+                totalPages: Math.ceil(total / limit) || 1, // Fallback to 1 if empty
             },
             { status: 200 }
         );

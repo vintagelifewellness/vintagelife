@@ -28,13 +28,37 @@ export default function Page() {
     fetchData(currentPage, dsidFilter)
   }, [currentPage, dsidFilter])
 
-  const handleExport = () => {
-    const recordsToExport = selectedIds.length > 0
-      ? data.filter(item => selectedIds.includes(item.dsid))
-      : data
+ const handleExport = async () => {
+    let recordsToExport = [];
 
-    if (recordsToExport.length === 0) return alert('No records to export.')
+    // If checkboxes are selected, export ONLY the selected items on the current page
+    if (selectedIds.length > 0) {
+      recordsToExport = data.filter(item => selectedIds.includes(item.dsid));
+    } else {
+      // If no checkboxes are selected, fetch ALL data matching the current filter
+      try {
+        // limit=999999 fetches all records
+        const res = await fetch(`/api/withdrawalreport/travel/pending?page=1&limit=999999&dscode=${dsidFilter}`);
+        const result = await res.json();
+        
+        if (result.success) {
+          recordsToExport = result.data;
+        } else {
+          alert('Failed to fetch all records for export.');
+          return;
+        }
+      } catch (error) {
+        console.error('Export fetch failed:', error);
+        alert('Failed to fetch data for export.');
+        return;
+      }
+    }
 
+    if (!recordsToExport || recordsToExport.length === 0) {
+      return alert('No records to export.');
+    }
+
+    // Format the data for Excel
     const formatted = recordsToExport.map(item => ({
       DSID: item.dsid,
       Name: item.name,
@@ -45,13 +69,14 @@ export default function Page() {
       Charges: item.charges,
       'Pay Amount': item.payamount,
       Date: item.date
-    }))
+    }));
 
-    const worksheet = XLSX.utils.json_to_sheet(formatted)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Selected Closings')
-    XLSX.writeFile(workbook, 'Pending.xlsx')
-  }
+    const worksheet = XLSX.utils.json_to_sheet(formatted);
+    const workbook = XLSX.utils.book_new();
+    
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Selected Closings');
+    XLSX.writeFile(workbook, 'Pending.xlsx');
+  };
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {

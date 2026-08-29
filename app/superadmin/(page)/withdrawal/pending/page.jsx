@@ -135,16 +135,55 @@ export default function Page() {
   // EXPORT
   // ======================================================
 
-  const handleExport = () => {
-    const recordsToExport =
-      selectedIds.length > 0
-        ? data.filter((item) => selectedIds.includes(item._id))
-        : data
+ // ======================================================
+  // EXPORT (Updated to fetch all pages)
+  // ======================================================
 
-    if (recordsToExport.length === 0) {
-      return alert('No records found')
+  const handleExport = async () => {
+    let recordsToExport = []
+
+    // If checkboxes are selected, export ONLY the selected items on the current page
+    if (selectedIds.length > 0) {
+      recordsToExport = data.filter((item) => selectedIds.includes(item._id))
+    } else {
+      // If no checkboxes are selected, fetch ALL data matching the current filters
+      try {
+        setLoading(true) // Optional: show loading state while preparing export
+
+        const params = new URLSearchParams()
+        
+        // Pass a very high limit to get all records, or handle 'all' in your backend
+        params.append('limit', '999999') 
+        params.append('page', '1')
+
+        if (appliedDsid) params.append('dscode', appliedDsid)
+        if (appliedAmount) params.append('minAmount', appliedAmount)
+        if (appliedDate) params.append('date', appliedDate)
+
+        const res = await fetch(`/api/withdrawalreport/pending?${params.toString()}`)
+        const result = await res.json()
+
+        if (result.success) {
+          recordsToExport = result.data
+        } else {
+          alert('Failed to fetch all records for export.')
+          setLoading(false)
+          return
+        }
+      } catch (error) {
+        console.error('Export fetch failed:', error)
+        alert('Failed to fetch data for export.')
+        setLoading(false)
+        return
+      }
     }
 
+    if (!recordsToExport || recordsToExport.length === 0) {
+      setLoading(false)
+      return alert('No records found to export')
+    }
+
+    // Format the data for Excel
     const formatted = recordsToExport.map((item) => ({
       DSID: item.dsid,
       Name: item.name,
@@ -159,7 +198,6 @@ export default function Page() {
     }))
 
     const worksheet = XLSX.utils.json_to_sheet(formatted)
-
     const workbook = XLSX.utils.book_new()
 
     XLSX.utils.book_append_sheet(
@@ -169,6 +207,7 @@ export default function Page() {
     )
 
     XLSX.writeFile(workbook, 'PendingWithdrawals.xlsx')
+    setLoading(false)
   }
 
   // ======================================================
