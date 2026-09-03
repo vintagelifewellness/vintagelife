@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import CnfStock from '@/components/CnfStock'
+import CnfStock from '@/components/CnfStockforuser'
 import { useSession } from "next-auth/react"
 
 export default function page() {
