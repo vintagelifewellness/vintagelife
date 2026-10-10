@@ -119,7 +119,9 @@ export default function CnfStock({ dscode }) {
             setActionLoading(false);
         }
     };
-
+    const overallTotal = stock.reduce((total, item) => {
+        return total + Number(item.quantity || 0) * Number(item.price || 0);
+    }, 0);
     if (loading) {
         return (
             <div className="flex justify-center items-center py-10">
@@ -212,6 +214,7 @@ export default function CnfStock({ dscode }) {
                                 <th className="px-6 py-3 text-left">Product</th>
                                 <th className="px-6 py-3 text-center">Available Quantity</th>
                                 <th className="px-6 py-3 text-right">Single Price</th>
+                                <th className="px-6 py-3 text-right">Total Price</th>
                                 <th className="px-6 py-3 text-right">RP</th>
                                 <th className="px-6 py-3 text-center">Actions</th>
                             </tr>
@@ -234,8 +237,12 @@ export default function CnfStock({ dscode }) {
                                                     }`}
                                             />
                                         </td>
+
                                         <td className="px-6 py-4 text-right">
                                             ₹{Number(item.price || 0).toLocaleString("en-IN")}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            ₹{(quantity * Number(item.price || 0)).toLocaleString("en-IN")}
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             ₹{Number(item.sp || 0).toLocaleString("en-IN")}
@@ -260,6 +267,22 @@ export default function CnfStock({ dscode }) {
                                 );
                             })}
                         </tbody>
+                        <tfoot>
+                            <tr className="border-t-2 border-gray-300 bg-blue-50">
+                                <td
+                                    colSpan={4}
+                                    className="px-6 py-4 text-right font-bold text-gray-800"
+                                >
+                                    Overall Total Price:
+                                </td>
+
+                                <td className="px-6 py-4 text-right font-bold text-blue-700 text-lg">
+                                    ₹{overallTotal.toLocaleString("en-IN")}
+                                </td>
+
+                                <td colSpan={2}></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             )}
