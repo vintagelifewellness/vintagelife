@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 
 import CnfDemand from "../../../../model/CnfDemand"; 
-
 import CnfModel from "../../../../model/c&fusers"; 
 
 const connectToDB = async () => {
@@ -23,9 +22,12 @@ export async function GET(request) {
         const limit = parseInt(searchParams.get("limit")) || 10;
         const skip = (page - 1) * limit;
 
-        const totalRecords = await CnfDemand.countDocuments();
+        // Filter for only Approved or Pending statuses
+        const filter = { status: { $in: ["Approved", "Pending"] } };
+
+        const totalRecords = await CnfDemand.countDocuments(filter);
         
-        const demands = await CnfDemand.find()
+        const demands = await CnfDemand.find(filter)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
@@ -37,14 +39,11 @@ export async function GET(request) {
 
         const cnfNameMap = {};
         cnfUsers.forEach(user => {
-           
             cnfNameMap[user.dscode] = user.cfName || user.name || "Unknown C&F";
         });
 
-    
         const finalDemands = demands.map(demand => ({
             ...demand,
-           
             cfName: cnfNameMap[demand.dscode] || demand.cfName 
         }));
 

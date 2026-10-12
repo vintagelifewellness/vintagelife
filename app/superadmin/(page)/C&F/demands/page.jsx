@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
 export default function SuperadminDashboard() {
     const [demands, setDemands] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+    const router = useRouter();
     // 🚀 Pagination ke liye naye states
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -16,14 +16,14 @@ export default function SuperadminDashboard() {
         const fetchDemands = async () => {
             try {
                 setLoading(true); // Page change hone par loading dikhane ke liye
-                
+
                 // 🚀 API URL mein page aur limit bhej rahe hain
                 const response = await axios.get(`/api/c&f/get-demands?page=${currentPage}&limit=${limit}`);
-                
+
                 if (response.data.success) {
                     setDemands(response.data.data);
                     // Agar backend totalPages bhej raha hai toh set karo, warna 1 rakho
-                    setTotalPages(response.data.totalPages || 1); 
+                    setTotalPages(response.data.totalPages || 1);
                 }
             } catch (error) {
                 console.error("Error fetching demands:", error);
@@ -43,12 +43,40 @@ export default function SuperadminDashboard() {
     }
 
     return (
-        <div className="p-6 md:p-8 bg-gray-50 min-h-screen font-sans">
+        <div className="  bg-gray-50 min-h-screen font-sans">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight">C&F Stock Demands</h1>
-                    <p className="text-gray-500 font-medium mt-1">Review and manage all pending demands</p>
+                <div className="mb-8 flex items-start justify-between flex-wrap gap-4">
+                    <div>
+                        <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight">
+                            C&F Stock Demands
+                        </h1>
+                        <p className="text-gray-500 font-medium mt-1">
+                            Review and manage all demands
+                        </p>
+                    </div>
+
+                    {/* Recycle Bin Button */}
+                    <button
+                        onClick={() => router.push("/superadmin/C&F/demands/deleted")}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-bold shadow-sm transition-all hover:-translate-y-0.5"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                        </svg>
+                        Recycle Bin
+                    </button>
                 </div>
 
                 {/* Table Box */}

@@ -9,9 +9,13 @@ export default function DemandDetailsPage() {
     const [demand, setDemand] = useState(null);
     const [loading, setLoading] = useState(true);
     const [approving, setApproving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [restoring, setRestoring] = useState(false);
+
     const handlePrint = () => {
         window.print();
     };
+
     useEffect(() => {
         const fetchSingleDemand = async () => {
             try {
@@ -29,49 +33,181 @@ export default function DemandDetailsPage() {
     }, [params.id]);
 
     // Approve Karne ka function
-const handleApprove = async () => {
-    const confirmApprove = window.confirm(
-        "Are you sure you want to approve this demand?"
-    );
-
-    if (!confirmApprove) return;
-
-    setApproving(true);
-
-    try {
-        const response = await axios.patch(
-            `/api/c&f/get-demands/${params.id}`,
-            {
-                status: "Approved"
-            }
+    const handleApprove = async () => {
+        const confirmApprove = window.confirm(
+            "Are you sure you want to approve this demand?"
         );
 
-        if (response.data.success) {
-            alert("Demand successfully approved.");
-            setDemand(response.data.data);
-        } else {
-            alert(response.data.message || "Failed to approve demand.");
+        if (!confirmApprove) return;
+
+        setApproving(true);
+
+        try {
+            const response = await axios.patch(
+                `/api/c&f/get-demands/${params.id}`,
+                {
+                    status: "Approved"
+                }
+            );
+
+            if (response.data.success) {
+                alert("Demand successfully approved.");
+                setDemand(response.data.data);
+            } else {
+                alert(response.data.message || "Failed to approve demand.");
+            }
+
+        } catch (error) {
+            const message =
+                error.response?.data?.message ||
+                "Error occurred while approving the demand.";
+
+            alert(message);
+        } finally {
+            setApproving(false);
         }
+    };
 
-    } catch (error) {
-        const message =
-            error.response?.data?.message ||
-            "Error occurred while approving the demand.";
+    // ==========================================
+    // SOFT DELETE → Move to Recycle Bin
+    // ==========================================
+    const handleSoftDelete = async () => {
+        const confirmDelete = window.confirm(
+            "Are you sure you want to move this demand to Recycle Bin?"
+        );
 
-        alert(message);
-    } finally {
-        setApproving(false);
-    }
-};
+        if (!confirmDelete) return;
+
+        setDeleting(true);
+
+        try {
+            const response = await axios.patch(
+                `/api/c&f/get-demands/${params.id}`,
+                { status: "Deleted" }
+            );
+
+            if (response.data.success) {
+                alert("Demand moved to Recycle Bin.");
+                setDemand(response.data.data);
+            } else {
+                alert(response.data.message || "Failed to delete demand.");
+            }
+
+        } catch (error) {
+            const message =
+                error.response?.data?.message ||
+                "Error occurred while deleting the demand.";
+
+            alert(message);
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    // ==========================================
+    // RESTORE → From Recycle Bin back to Pending
+    // ==========================================
+    const handleRestore = async () => {
+        const confirmRestore = window.confirm(
+            "Are you sure you want to restore this demand?"
+        );
+
+        if (!confirmRestore) return;
+
+        setRestoring(true);
+
+        try {
+            const response = await axios.patch(
+                `/api/c&f/get-demands/${params.id}`,
+                { status: "Pending" }
+            );
+
+            if (response.data.success) {
+                alert("Demand restored successfully.");
+                setDemand(response.data.data);
+            } else {
+                alert(response.data.message || "Failed to restore demand.");
+            }
+
+        } catch (error) {
+            const message =
+                error.response?.data?.message ||
+                "Error occurred while restoring the demand.";
+
+            alert(message);
+        } finally {
+            setRestoring(false);
+        }
+    };
+
+    // ==========================================
+    // PERMANENT DELETE → Remove from DB
+    // ==========================================
+    const handlePermanentDelete = async () => {
+        const confirmDelete = window.confirm(
+            "⚠️ WARNING: This will permanently delete the demand from the database. This action cannot be undone. Are you sure?"
+        );
+
+        if (!confirmDelete) return;
+
+        // Second confirmation for extra safety
+        const doubleConfirm = window.confirm(
+            "Are you absolutely sure? This is irreversible!"
+        );
+
+        if (!doubleConfirm) return;
+
+        setDeleting(true);
+
+        try {
+            const response = await axios.delete(
+                `/api/c&f/get-demands/${params.id}`
+            );
+
+            if (response.data.success) {
+                alert("Demand permanently deleted.");
+                router.push("/superadmin/C&F/demands"); // redirect to listing
+            } else {
+                alert(response.data.message || "Failed to delete demand.");
+            }
+
+        } catch (error) {
+            const message =
+                error.response?.data?.message ||
+                "Error occurred while deleting the demand.";
+
+            alert(message);
+        } finally {
+            setDeleting(false);
+        }
+    };
 
     if (loading) return <div className="p-10 text-center font-bold text-blue-600">Loading Details...</div>;
     if (!demand) return <div className="p-10 text-center font-bold text-red-600">Demand nahi mili!</div>;
 
+    // Status styling helper
+    const getStatusStyle = (status) => {
+        switch (status) {
+            case "Pending":
+                return "bg-yellow-500 text-yellow-900";
+            case "Approved":
+                return "bg-green-500 text-white";
+            case "Rejected":
+                return "bg-red-500 text-white";
+            case "Deleted":
+                return "bg-gray-600 text-white";
+            default:
+                return "bg-blue-500 text-white";
+        }
+    };
+
+    const isDeleted = demand.status === "Deleted";
+
     return (
-        <div className="p-6 md:p-8 bg-gray-50 min-h-screen">
-            <div className="max-w-5xl mx-auto">
+        <div className="  bg-gray-50 min-h-screen">
+            <div className=" mx-auto">
                 {/* Back Button */}
-                <div className="mb-6 flex items-center justify-between">
+                <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
                     <button
                         onClick={() => router.back()}
                         className="text-blue-600 font-bold hover:underline flex items-center gap-1 print:hidden"
@@ -87,18 +223,45 @@ const handleApprove = async () => {
                     </button>
                 </div>
 
+                {/* Recycle Bin Banner */}
+                {isDeleted && (
+                    <div className="mb-5 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl print:hidden">
+                        <div className="flex items-center gap-3">
+                            <span className="text-3xl">🗑️</span>
+                            <div>
+                                <p className="font-black text-red-700 text-lg">
+                                    This demand is in Recycle Bin
+                                </p>
+                                <p className="text-sm text-red-600">
+                                    You can restore it or delete it permanently.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div
                     id="print-area"
-                    className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200 print:shadow-none print:border-none print:rounded-none"
+                    className={`bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200 print:shadow-none print:border-none print:rounded-none ${isDeleted ? "opacity-90" : ""}`}
                 >
                     {/* Header */}
                     <div className="bg-slate-800 p-6 text-white flex justify-between items-center flex-wrap gap-4">
-                        <div>
-                            <h2 className="text-2xl font-black">Demand Details</h2>
-                            <p className="text-slate-400 mt-1">ID: {demand._id}</p>
+                        <div className="flex items-center gap-4">
+                            
+
+                            {/* Company Name + Demand ID */}
+                            <div>
+                                <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+                                 Vintagelife Wellness Pvt. Ltd.
+                                </h2>
+                                <p className="text-slate-400 text-sm mt-1 font-medium">
+                                    Demand ID: <span className="font-mono">{demand._id}</span>
+                                </p>
+                            </div>
                         </div>
-                        <span className={`px-4 py-1.5 rounded-lg text-sm font-black uppercase tracking-widest ${demand.status === 'Pending' ? 'bg-yellow-500 text-yellow-900' : 'bg-green-500 text-white'
-                            }`}>
+
+                        {/* Status Badge */}
+                        <span className={`px-4 py-1.5 rounded-lg text-sm font-black uppercase tracking-widest ${getStatusStyle(demand.status)}`}>
                             {demand.status}
                         </span>
                     </div>
@@ -153,7 +316,7 @@ const handleApprove = async () => {
                     </div>
 
                     {/* Grand Total & Action Buttons */}
-                 <div className="p-6 bg-slate-50 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-gray-200  ">
+                    <div className="p-6 bg-slate-50 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-gray-200">
                         <div className="flex gap-8">
                             <div>
                                 <p className="text-xs text-slate-500 font-bold uppercase">Grand Total Price</p>
@@ -165,111 +328,159 @@ const handleApprove = async () => {
                             </div>
                         </div>
 
-                        {/* APPROVE BUTTON */}
-                        {demand.status === "Pending" ? (
-                            <button
-                                onClick={handleApprove}
-                                disabled={approving}
-                                className={`px-8 py-3 rounded-xl font-black text-white text-lg shadow-lg transition-all ${approving ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-400 hover:-translate-y-1'
-                                    }`}
-                            >
-                                {approving ? "Approving..." : "✅ Approve Demand"}
-                            </button>
-                        ) : (
-                            <div className="px-8 py-3 bg-green-100 border border-green-300 text-green-800 rounded-xl font-black text-lg flex items-center gap-2">
-                                ✅ Already Approved
-                            </div>
-                        )}
+                        {/* ACTION BUTTONS */}
+                        <div className="flex flex-wrap gap-3 print:hidden">
+                            {/* If Deleted → show Restore + Permanent Delete */}
+                            {isDeleted ? (
+                                <>
+                                    <button
+                                        onClick={handleRestore}
+                                        disabled={restoring}
+                                        className={`px-6 py-3 rounded-xl font-black text-white shadow-lg transition-all ${restoring
+                                            ? "bg-gray-400 cursor-not-allowed"
+                                            : "bg-blue-500 hover:bg-blue-400 hover:-translate-y-1"
+                                            }`}
+                                    >
+                                        {restoring ? "Restoring..." : "♻️ Restore Demand"}
+                                    </button>
+
+                                    <button
+                                        onClick={handlePermanentDelete}
+                                        disabled={deleting}
+                                        className={`px-6 py-3 rounded-xl font-black text-white shadow-lg transition-all ${deleting
+                                            ? "bg-gray-400 cursor-not-allowed"
+                                            : "bg-red-600 hover:bg-red-500 hover:-translate-y-1"
+                                            }`}
+                                    >
+                                        {deleting ? "Deleting..." : "🗑️ Delete Permanently"}
+                                    </button>
+                                </>
+                            ) : demand.status === "Pending" ? (
+                                <>
+                                    {/* Pending → show Approve + Soft Delete */}
+                                    <button
+                                        onClick={handleSoftDelete}
+                                        disabled={deleting || approving}
+                                        className={`px-6 py-3 rounded-xl font-black text-white shadow-lg transition-all ${deleting || approving
+                                            ? "bg-gray-400 cursor-not-allowed"
+                                            : "bg-red-500 hover:bg-red-400 hover:-translate-y-1"
+                                            }`}
+                                    >
+                                        {deleting ? "Deleting..." : "🗑️ Move to Recycle Bin"}
+                                    </button>
+
+                                    <button
+                                        onClick={handleApprove}
+                                        disabled={approving || deleting}
+                                        className={`px-8 py-3 rounded-xl font-black text-white text-lg shadow-lg transition-all ${approving || deleting
+                                            ? "bg-gray-400 cursor-not-allowed"
+                                            : "bg-green-500 hover:bg-green-400 hover:-translate-y-1"
+                                            }`}
+                                    >
+                                        {approving ? "Approving..." : "✅ Approve Demand"}
+                                    </button>
+                                </>
+                            ) : demand.status === "Approved" ? (
+                                <div className="px-8 py-3 bg-green-100 border border-green-300 text-green-800 rounded-xl font-black text-lg flex items-center gap-2">
+                                    ✅ Already Approved
+                                </div>
+                            ) : (
+                                <div className="px-8 py-3 bg-gray-100 border border-gray-300 text-gray-700 rounded-xl font-black text-lg flex items-center gap-2">
+                                    Status: {demand.status}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
+
             <style jsx global>{`
-    @media print {
-        @page {
-            size: A4;
-            margin: 12mm;
-        }
+                @media print {
+                    @page {
+                        size: A4;
+                        margin: 12mm;
+                    }
 
-        html,
-        body {
-            background: white !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
+                    html,
+                    body {
+                        background: white !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
 
-        body * {
-            visibility: hidden;
-        }
+                    body * {
+                        visibility: hidden;
+                    }
 
-        #print-area,
-        #print-area * {
-            visibility: visible;
-        }
+                    #print-area,
+                    #print-area * {
+                        visibility: visible;
+                    }
 
-        #print-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-            border: none !important;
-            border-radius: 0 !important;
-        }
+                    #print-area {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        box-shadow: none !important;
+                        border: none !important;
+                        border-radius: 0 !important;
+                    }
 
-        .print\\:hidden {
-            display: none !important;
-        }
+                    .print\\:hidden {
+                        display: none !important;
+                    }
 
-        table {
-            width: 100% !important;
-            border-collapse: collapse !important;
-        }
+                    table {
+                        width: 100% !important;
+                        border-collapse: collapse !important;
+                    }
 
-        th,
-        td {
-            border: 1px solid #d1d5db !important;
-            padding: 8px !important;
-        }
+                    th,
+                    td {
+                        border: 1px solid #d1d5db !important;
+                        padding: 8px !important;
+                    }
 
-        thead {
-            display: table-header-group;
-        }
+                    thead {
+                        display: table-header-group;
+                    }
 
-        tr {
-            page-break-inside: avoid;
-        }
+                    tr {
+                        page-break-inside: avoid;
+                    }
 
-        .bg-slate-800 {
-            background: #1e293b !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
+                    .bg-slate-800 {
+                        background: #1e293b !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
 
-        .bg-gray-100 {
-            background: #f3f4f6 !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
+                    .bg-gray-100 {
+                        background: #f3f4f6 !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
 
-        .text-blue-600 {
-            color: #2563eb !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
+                    .text-blue-600 {
+                        color: #2563eb !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
 
-        .text-green-600 {
-            color: #16a34a !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
+                    .text-green-600 {
+                        color: #16a34a !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
 
-        .text-white {
-            color: white !important;
-        }
-    }
-`}</style>
+                    .text-white {
+                        color: white !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

@@ -66,6 +66,37 @@ export async function PATCH(req, { params }) {
         }
 
         // ==========================================
+        // DELETE / SOFT DELETE STATUS
+        // ==========================================
+        if (body.status === "Deleted") {
+
+            // Optional: prevent deleting already approved demands
+            if (demand.status === "Approved") {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        message: "Approved demand cannot be deleted."
+                    },
+                    { status: 400 }
+                );
+            }
+
+            demand.status = "Deleted";
+            demand.deletedAt = new Date();
+
+            await demand.save();
+
+            return NextResponse.json(
+                {
+                    success: true,
+                    data: demand,
+                    message: "Demand marked as Deleted successfully."
+                },
+                { status: 200 }
+            );
+        }
+
+        // ==========================================
         // APPROVE DEMAND
         // ==========================================
         if (body.status === "Approved") {
@@ -297,6 +328,63 @@ export async function PATCH(req, { params }) {
             {
                 success: false,
                 message: "Update Error",
+                error: error.message
+            },
+            { status: 500 }
+        );
+    }
+}
+
+// ==========================================
+// DELETE DEMAND (HARD DELETE)
+// ==========================================
+export async function DELETE(req, { params }) {
+    try {
+        await connectToDB();
+
+        const { id } = params;
+
+        const demand = await CnfDemand.findById(id);
+
+        if (!demand) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Demand not found"
+                },
+                { status: 404 }
+            );
+        }
+
+        // Optional safety: Prevent deletion of approved demand
+        if (demand.status === "Approved") {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Approved demand cannot be deleted."
+                },
+                { status: 400 }
+            );
+        }
+
+        await CnfDemand.findByIdAndDelete(id);
+
+        return NextResponse.json(
+            {
+                success: true,
+                message: "Demand deleted permanently."
+            },
+            { status: 200 }
+        );
+
+    } catch (error) {
+
+        console.error("Delete Error:", error);
+
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Delete Error",
                 error: error.message
             },
             { status: 500 }
