@@ -51,11 +51,12 @@ export async function POST(req) {
 
       if (newMatchingSP <= 0) continue;
 
-
+ 
       const amount = newMatchingSP * 10;
-      const payamountBeforeCharge = amount * 0.10; // 10%
-      const charges = payamountBeforeCharge * 0.05; // 5% of payamount
-      const payamount = payamountBeforeCharge - charges; // final payable amount
+      const charges = amount * 0.05; // Base amount ka 5%
+      const amountAfterCharge = amount - charges; // 95% remaining
+      const payamount = amountAfterCharge * 0.15; // Remaining amount ka 15%
+
 
       // Prepare payload for insertMany
       closingEntries.push({
