@@ -37,7 +37,6 @@ export default function Page() {
       alert(result.message)
       fetchData(currentPage)
     } catch (error) {
-      console.error('API call failed', error)
       alert('API call failed!')
     } finally {
       setLoading(false)
