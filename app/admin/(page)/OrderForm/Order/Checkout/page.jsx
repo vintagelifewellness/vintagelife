@@ -329,7 +329,7 @@ export default function Page() {
                             )}
                             {
                                 Number(userdata?.activesp) === 50 &&
-                                Number(formData?.totalsp) >= 10000 && (
+                                Number(formData?.totalsp) >= 100 && (
                                     <SelectField
                                         label="Order Type"
                                         name="ordertype"
