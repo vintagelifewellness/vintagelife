@@ -109,13 +109,15 @@ export default function Page() {
         id: userData._id,
         kycVerification: {
           isVerified: formData.kycVerified,
-        },
-        usertype: formData.usertype === "100sp" ? "1" : formData.usertype,
+        }, 
         status: formData.status
       };
 
-      if (formData.usertype === "100sp") {
-        updateData.activesp = "100";
+      if (userData.usertype === "0") {
+        updateData.usertype = formData.usertype === "100sp" ? "1" : formData.usertype;
+        if (formData.usertype === "100sp") {
+          updateData.activesp = "100";
+        }
       }
 
       const paymentRequests = [];

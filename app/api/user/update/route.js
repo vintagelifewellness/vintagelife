@@ -17,8 +17,8 @@ export async function PATCH(req) {
     if (!user) {
       return Response.json({ success: false, message: "User not found!" }, { status: 404 });
     }
-    if (data.usertype === "1") {
-      data.activedate = new Date();  // Add the current date
+    if (data.usertype === "1" && user.usertype !== "1") {
+      data.activedate = new Date();  // sirf first-time activation pe
     }
     // Hash password if provided
     if (data.password) {
