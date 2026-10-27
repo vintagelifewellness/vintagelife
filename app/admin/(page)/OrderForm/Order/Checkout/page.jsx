@@ -344,7 +344,7 @@ export default function Page() {
                         </tbody>
                     </table>
 
-                    {formError && <p className="text-red-600 mt-2">{formError}</p>}
+                    {formError && <p className="text-red-700 mt-2">{formError}</p>}
 
                     <button
                         onClick={handleSubmit}
