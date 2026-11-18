@@ -6,6 +6,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { toWords } from 'number-to-words';
 import { useReactToPrint } from "react-to-print";
 export default function OrderDetails({ data, role }) {
+
   const contentRef = useRef(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
   const [success, setSuccess] = useState(null);
@@ -370,6 +371,20 @@ export default function OrderDetails({ data, role }) {
         </div>
 
         {/* ---------- BILL / SHIP ---------- */}
+      {data?.cfName && (
+  <div className="grid grid-cols-2 border border-black mb-2 rounded overflow-hidden text-sm">
+    <div className="bg-gray-100 p-1 font-semibold text-gray-700 border-r border-gray-400 flex items-center gap-1">
+      C&F Name
+      <span className="text-[9px] bg-blue-100 text-blue-800 px-1 py-0.5 rounded font-bold">
+        C&F ORDER
+      </span>
+    </div>
+
+    <div className="bg-white p-1 font-medium text-gray-900">
+      {data.cfName}
+    </div>
+  </div>
+)}
         <div className="grid grid-cols-2 border border-black mb-2 rounded overflow-hidden">
           <div>
             <div className="bg-gray-200 text-center font-bold p-1 border-b border-black">Bill To</div>
